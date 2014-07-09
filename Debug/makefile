@@ -44,19 +44,19 @@ endif
 # Add inputs and outputs from these tool invocations to the build variables 
 
 # All Target
-all: I2C_Sensor_Management
+all: BeagleBoneBlack_Flight_Computer
 
 # Tool invocations
-I2C_Sensor_Management: $(OBJS) $(USER_OBJS)
+BeagleBoneBlack_Flight_Computer: $(OBJS) $(USER_OBJS)
 	@echo 'Building target: $@'
 	@echo 'Invoking: Cross G++ Linker'
-	arm-linux-gnueabihf-g++  -o "I2C_Sensor_Management" $(OBJS) $(USER_OBJS) $(LIBS)
+	arm-linux-gnueabihf-g++  -o "BeagleBoneBlack_Flight_Computer" $(OBJS) $(USER_OBJS) $(LIBS)
 	@echo 'Finished building target: $@'
 	@echo ' '
 
 # Other Targets
 clean:
-	-$(RM) $(C++_DEPS)$(OBJS)$(C_DEPS)$(CC_DEPS)$(K_DEPS)$(CLA_DEPS)$(CPP_DEPS)$(EXECUTABLES)$(CXX_DEPS)$(C_UPPER_DEPS) I2C_Sensor_Management
+	-$(RM) $(C++_DEPS)$(OBJS)$(C_DEPS)$(CC_DEPS)$(K_DEPS)$(CLA_DEPS)$(CPP_DEPS)$(EXECUTABLES)$(CXX_DEPS)$(C_UPPER_DEPS) BeagleBoneBlack_Flight_Computer
 	-@echo ' '
 
 .PHONY: all clean dependents

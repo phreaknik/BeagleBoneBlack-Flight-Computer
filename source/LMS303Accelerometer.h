@@ -14,6 +14,8 @@
 #define LMS303ACCELEROMETER_H_
 
 #define LMS303_I2C_BUFFER		0x40	// Only 0x40 registers available according to LMS303 datasheet
+#define FIFO_SLOTS				0x0F	// Number of slots in FIFO for each accelerometer output
+#define FIFO_SIZE 				0x60	// Size of FIFO array
 
 enum LMS303_ACCEL_BANDWIDTH {
 	BW_SHUTDOWN	= 0,
@@ -41,6 +43,8 @@ class LMS303Accelerometer {
 private:
 	int I2CBus, I2CAddress;
 	char dataBuffer[LMS303_I2C_BUFFER];
+	char AccelFIFO[FIFO_SIZE];	// 16 FIFO slots * 6 Accel output registers
+	LMS303_ACCEL_MODE AccelFIFOMode = FIFO_BYPASS;
 
 	int accelX;
 	int accelY;
@@ -51,24 +55,20 @@ private:
 
 	int convertAcceleration(int msb_reg_addr, int lsb_reg_addr);
 	int writeI2CDeviceByte(char address, char value);
-
+	int readI2CDevice(char address, char data[], int size);
 	void calculatePitchAndRoll();
+	int readAccelFIFO(char buffer[]);
+	int averageAccelFIFO(int slots);
 
 public:
 	LMS303Accelerometer(int bus, int address);
-
-
-	int readI2CDevice(char address, char data[], int size);	// Make this private
-
-
 
 	int reset();
 	int readFullSensorState();
 	int setAccelBandwidth(LMS303_ACCEL_BANDWIDTH bandwidth);	// Must set bandwidth to enable device
 	LMS303_ACCEL_BANDWIDTH getAccelBandwidth();
-	int setAccelMode(LMS303_ACCEL_MODE mode);
-	LMS303_ACCEL_MODE getAccelMode();
-	int getAccelFIFOAverage(char buffer[], int size);
+	int setAccelFIFOMode(LMS303_ACCEL_MODE mode);
+	LMS303_ACCEL_MODE getAccelFIFOMode();
 
 	int getAccelX() { return accelX; }
 	int getAccelY() { return accelY; }
