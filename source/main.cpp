@@ -10,17 +10,21 @@
 #include <fstream>
 #include <string>
 #include <unistd.h>
-#include "LMS303Accelerometer.h"
+#include "LMS303.h"
 
 using namespace std;
 
 int main(int argc, char* argv[]) {
-	LMS303Accelerometer accel0(1, 0x1d);
+	LMS303 accel0(1, 0x1d);
 
 
 
 	while(1) {
 		accel0.readFullSensorState();
+
+		cout << accel0.getAccelX() << endl;
+		cout << accel0.getAccelY() << endl;
+		cout << accel0.getAccelZ() << endl;
 
 		cout << "Pitch:\t" << accel0.getPitch() << endl;
 		cout << "Roll:\t" << accel0.getRoll() << endl;

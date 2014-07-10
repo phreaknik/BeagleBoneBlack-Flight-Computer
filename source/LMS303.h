@@ -1,5 +1,5 @@
 /*
- * LMS303Accelerometer.h
+ * LMS303.h
  *	For use with LMS303 Accelerometer as found in AltIMU-10. Note, must set bandwidth to enable
  *	measurements.
  *
@@ -10,8 +10,8 @@
  *  	http://www.inmotion.pt/store/altimu10-v3-gyro-accelerometer-compass-and-altimeter-l3gd20h
  */
 
-#ifndef LMS303ACCELEROMETER_H_
-#define LMS303ACCELEROMETER_H_
+#ifndef LMS303_H_
+#define LMS303_H_
 
 #define LMS303_I2C_BUFFER		0x40	// Only 0x40 registers available according to LMS303 datasheet
 #define FIFO_SLOTS				0x0F	// Number of slots in FIFO for each accelerometer output
@@ -38,11 +38,13 @@ enum LMS303_ACCEL_MODE {
 	FIFO_ERROR
 };
 
-class LMS303Accelerometer {
+class LMS303 {
 
 private:
+	int celsius;
+
 	int I2CBus, I2CAddress;
-	char dataBuffer[LMS303_I2C_BUFFER];
+	char dataBuffer[LMS303_I2C_BUFFER] = { 0x00 };
 	char AccelFIFO[FIFO_SIZE];	// 16 FIFO slots * 6 Accel output registers
 	LMS303_ACCEL_MODE AccelFIFOMode = FIFO_BYPASS;
 
@@ -53,23 +55,27 @@ private:
 	double pitch;	// in degrees
 	double roll;	// in degrees
 
-	int convertAcceleration(int msb_reg_addr, int lsb_reg_addr);
 	int writeI2CDeviceByte(char address, char value);
 	int readI2CDevice(char address, char data[], int size);
+
+	int convertAcceleration(int msb_reg_addr, int lsb_reg_addr);
 	void calculatePitchAndRoll();
 	int readAccelFIFO(char buffer[]);
 	int averageAccelFIFO(int slots);
 
 public:
-	LMS303Accelerometer(int bus, int address);
+	LMS303(int bus, int address);
 
 	int reset();
 	int readFullSensorState();
+
+	int enableTempSensor();
+	int readTemperature();
+
 	int setAccelBandwidth(LMS303_ACCEL_BANDWIDTH bandwidth);	// Must set bandwidth to enable device
 	LMS303_ACCEL_BANDWIDTH getAccelBandwidth();
 	int setAccelFIFOMode(LMS303_ACCEL_MODE mode);
 	LMS303_ACCEL_MODE getAccelFIFOMode();
-
 	int getAccelX() { return accelX; }
 	int getAccelY() { return accelY; }
 	int getAccelZ() { return accelZ; }
@@ -77,8 +83,8 @@ public:
 	float getPitch() { return pitch; }
 	float getRoll() { return roll; }
 
-	virtual ~LMS303Accelerometer();
+	virtual ~LMS303();
 };
 
 
-#endif /* LMS303ACCELEROMETER_H_ */
+#endif /* LMS303_H_ */
