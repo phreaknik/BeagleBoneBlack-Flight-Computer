@@ -17,17 +17,22 @@ using namespace std;
 int main(int argc, char* argv[]) {
 	LMS303 accel0(1, 0x1d);
 
-
-
 	while(1) {
 		accel0.readFullSensorState();
 
-		cout << accel0.getAccelX() << endl;
-		cout << accel0.getAccelY() << endl;
-		cout << accel0.getAccelZ() << endl;
+		cout << "##################################\n";
+		cout << "Magnetism X:\t" << accel0.getMagX() << endl;
+		cout << "Magnetism Y:\t" << accel0.getMagY() << endl;
+		cout << "Magnetism Z:\t" << accel0.getMagZ() << endl << endl;
 
-		cout << "Pitch:\t" << accel0.getPitch() << endl;
-		cout << "Roll:\t" << accel0.getRoll() << endl;
+		cout << "Accel X:\t" << accel0.getAccelX() << endl;
+		cout << "Accel Y:\t" << accel0.getAccelY() << endl;
+		cout << "Accel Z:\t" << accel0.getAccelZ() << endl << endl;
+
+		cout << "Pitch:\t" << accel0.getPitch() << "\u00b0" << endl;
+		cout << "Roll:\t" << accel0.getRoll() << "\u00b0" << endl << endl;
+
+		cout << "Core temperature:\t" << accel0.getTemperature() << "\u00b0" << endl;
 
 		sleep(1);
 	}
