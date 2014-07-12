@@ -42,4 +42,5 @@ C_UPPER_DEPS :=
 SUBDIRS := \
 source \
 source/hardware \
+source/AHRS \
 
