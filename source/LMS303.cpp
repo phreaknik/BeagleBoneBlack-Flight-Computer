@@ -1,6 +1,6 @@
 /*
  * LMS303.cpp
- *	For use with LMS303 Accelerometer as found in AltIMU-10. Note, must set bandwidth to enable
+ *	For use with LMS303 Accelerometer as found in AltIMU-10. Note, must set dataRate to enable
  *	measurements.
  *
  *  Created on: Jul 3, 2014
@@ -62,8 +62,6 @@ LMS303::LMS303(int bus, int address) {
 	I2CBus = bus;
 	I2CAddress = address;
 
-	dataBuffer[LMS303_I2C_BUFFER];
-
 	accelX = 0;
 	accelY = 0;
 	accelZ = 0;
@@ -89,11 +87,12 @@ int LMS303::reset() {
 	writeI2CDeviceByte(REG_CTRL5, 0x00);	// Reset TEMP/MAG settings
 	writeI2CDeviceByte(REG_CTRL6, 0x00);	// Reset MAG settings
 	writeI2CDeviceByte(REG_CTRL7, 0x00);	// Reset TEMP/MAG/ACCEL settings
+	writeI2CDeviceByte(REG_FIFO_CTRL, 0x00);	// Set FIFO mode to Bypass
 	writeI2CDeviceByte(REG_FIFO_SRC, 0x00);	// Set FIFO mode to Bypass
 
 	// Clear memory
 	memset(dataBuffer, 0, LMS303_I2C_BUFFER);	// Clear dataBuffer
-	memset(accelFIFO, 0, FIFO_SIZE);	// Clear accelFIFO
+	memset(accelFIFO, 0, ACCEL_FIFO_SIZE);	// Clear accelFIFO
 
 	sleep(1);
 	cout << "Done." << endl;
@@ -108,7 +107,7 @@ int LMS303::readFullSensorState() {
 	 * simple block read command, but with the addresses offset so that the block read doesn't
 	 * try to read from any of the magnetometer addresses (registers 0x00-0x0E).
 	 */
-	if(accelFIFOMode == FIFO_STREAM) {	// Average the accel measurements stored in FIFO
+	if(accelFIFOMode == ACCEL_FIFO_STREAM) {	// Average the accel measurements stored in FIFO
 		// Read the rest of the memory excluding the Accel output registers (because they will burst
 		// FIFO data and ruin the burst sequence for the entire memory map.
 
@@ -119,7 +118,7 @@ int LMS303::readFullSensorState() {
 		readI2CDevice(REG_FIFO_CTRL, &dataBuffer[REG_FIFO_CTRL], LMS303_I2C_BUFFER-REG_FIFO_CTRL);
 
 		// Read accel FIFO afterwards to prevent I2C glitch
-		int slotsRead = readAccelFIFO(this->accelFIFO);	// Read Accel FIFO
+		int slotsRead = readAccelFIFO(accelFIFO);	// Read Accel FIFO
 		averageAccelFIFO(slotsRead);
 	}
 	else {	// No accel output averaging
@@ -178,7 +177,7 @@ int LMS303::getTemperature() {
 }
 
 int LMS303::enableMagnetometer() {
-	setMagBandwidth(BW_MAG_12p5HZ);	// Set bandwidth to enable device.
+	setMagDataRate(DR_MAG_12p5HZ);	// Set dataRate to enable device.
 	setMagScale(SCALE_MAG_2gauss);	// Set accelerometer SCALE
 
 	char buf[1] = {0x00};
@@ -226,14 +225,14 @@ int LMS303::setMagScale(LMS303_MAG_SCALE scale) {	// Set magnetometer output rat
 	return 0;
 }
 
-int LMS303::setMagBandwidth(LMS303_MAG_BANDWIDTH bandwidth) {	// Set magnetometer SCALE
+int LMS303::setMagDataRate(LMS303_MAG_DATA_RATE dataRate) {	// Set magnetometer SCALE
 	char buf[1] = {0x00};
 	readI2CDevice(REG_CTRL5, buf, 1);	// Read current register state
-	buf[0] &= 0x82;		// Clear resolution and bandwidth bits
+	buf[0] &= 0x82;		// Clear resolution and dataRate bits
 	buf[0] |= 0x20;	// Set resolution bits to medium resolution
-	buf[0] |= (char)bandwidth << 2;	// Set bandwidth bits
+	buf[0] |= (char)dataRate << 2;	// Set dataRate bits
 	if(writeI2CDeviceByte(REG_CTRL5, buf[0])) {	// write back to ctrl register
-		cout << "Failed to set magnetometer bandwidth!" << endl;
+		cout << "Failed to set magnetometer dataRate!" << endl;
 		return 1;
 	}
 	return 0;
@@ -246,16 +245,16 @@ float LMS303::convertMagnetism(int msb_reg_addr, int lsb_reg_addr){
 }
 
 int LMS303::enableAccelerometer() {
-	setAccelBandwidth(BW_ACCEL_100HZ);	// Set bandwidth to enable device.
+	setAccelDataRate(DR_ACCEL_100HZ);	// Set dataRate to enable device.
 	setAccelScale(SCALE_ACCEL_2g);	// Set accelerometer SCALE
-	setAccelFIFOMode(FIFO_STREAM);	// Enable FIFO for easy output averaging
+	setAccelFIFOMode(ACCEL_FIFO_STREAM);	// Enable FIFO for easy output averaging
 
 	char buf[1] = {0x00};
 	readI2CDevice(REG_CTRL1, buf, 1);	// Read current register state
 	buf[0] |= 0x07;		// Set X,Y,Z enable bits
 
 	if(writeI2CDeviceByte(REG_CTRL1, buf[0])!=0){
-			cout << "Failure to update enable accelerometer!" << endl;
+			cout << "Failure to enable accelerometer!" << endl;
 			return 1;
 	}
 	return 0;
@@ -320,25 +319,25 @@ float LMS303::convertAcceleration(int accel) {
 	return ((float)accel * (float)accelFullScale) / (float)0x8000;	// Convert to g's
 }
 
-int LMS303::setAccelBandwidth(LMS303_ACCEL_BANDWIDTH bandwidth){
-	char temp = bandwidth << 4;	//move value into bits 7,6,5,4
+int LMS303::setAccelDataRate(LMS303_ACCEL_DATA_RATE dataRate){
+	char temp = dataRate << 4;	//move value into bits 7,6,5,4
 
 	if(writeI2CDeviceByte(REG_CTRL1, temp)!=0){
-		cout << "Failure to update bandwidth value!" << endl;
+		cout << "Failure to update dataRate value!" << endl;
 		return 1;
 	}
 	return 0;
 }
 
-LMS303_ACCEL_BANDWIDTH LMS303::getAccelBandwidth(){
+LMS303_ACCEL_DATA_RATE LMS303::getAccelDataRate(){
 
 	char buf[1];
 	if(readI2CDevice(REG_CTRL1, buf, 1)!=0){
-		cout << "Failure to read bandwidth value" << endl;
-		return BW_ACCEL_ERROR;
+		cout << "Failure to read dataRate value" << endl;
+		return DR_ACCEL_ERROR;
 	}
 
-	return (LMS303_ACCEL_BANDWIDTH)buf[0];
+	return (LMS303_ACCEL_DATA_RATE)buf[0];
 }
 
 int LMS303::writeI2CDeviceByte(char address, char value) {
@@ -397,17 +396,17 @@ int LMS303::readI2CDevice(char address, char data[], int size){
     return 0;
 }
 
-int LMS303::setAccelFIFOMode(LMS303_ACCEL_MODE mode) {
+int LMS303::setAccelFIFOMode(LMS303_ACCEL_FIFO_MODE mode) {
 	char val[1] = {0x00};
 	readI2CDevice(REG_CTRL0, val, 1);	// Read current CTRL0 register
 
 
 	switch (mode) {
-	case FIFO_BYPASS: {
+	case ACCEL_FIFO_BYPASS: {
 		val[0] = 0x00;		// Leave FIFO mode bits as 0x00 for bypass mode
 		break;
 	}
-	case FIFO_STREAM: {
+	case ACCEL_FIFO_STREAM: {
 		val[0] = 0x40;
 		writeI2CDeviceByte(REG_CTRL0, (val[0] | 0x40) );	// Enable FIFO bit in CTRL0 register
 		break;
@@ -424,20 +423,20 @@ int LMS303::setAccelFIFOMode(LMS303_ACCEL_MODE mode) {
 	return 0;
 }
 
-LMS303_ACCEL_MODE LMS303::getAccelFIFOMode() {
+LMS303_ACCEL_FIFO_MODE LMS303::getAccelFIFOMode() {
 	char val[1] = { 0x00 };
 	readI2CDevice(REG_FIFO_CTRL, val, 1);	// Read current FIFO mode
 
 	switch (val[0]) {
-	case 0x00: return FIFO_BYPASS;
+	case 0x00: return ACCEL_FIFO_BYPASS;
 		break;
-	case 0x40: return FIFO_STREAM;
+	case 0x40: return ACCEL_FIFO_STREAM;
 		break;
-	default: return FIFO_ERROR;
+	default: return ACCEL_FIFO_ERROR;
 		break;
 	}
 
-	return FIFO_ERROR;
+	return ACCEL_FIFO_ERROR;
 }
 
 int LMS303::readAccelFIFO(char buffer[]) {
@@ -445,12 +444,17 @@ int LMS303::readAccelFIFO(char buffer[]) {
 	readI2CDevice(REG_FIFO_SRC, val, 1);	// Read current FIFO mode
 	val[0] &= 0x0F;	// Mask all but FIFO slot count bits
 
-	readI2CDevice(REG_OUT_X_L_A, this->accelFIFO, FIFO_SIZE);	// Read current FIFO mode
+	readI2CDevice(REG_OUT_X_L_A, accelFIFO, ACCEL_FIFO_SIZE);	// Read current FIFO mode
 
 	return (int)val[0]+1;	// Return the number of FIFO slots that held new data
 }
 
 int LMS303::averageAccelFIFO(int slots){
+	if(slots <= 0) {
+		cout << "Error! Divide by 0 in averageAccelFIFO()!" << endl;
+		return 1;
+	}
+
 	int sumX = 0;
 	int sumY = 0;
 	int sumZ = 0;
@@ -481,9 +485,9 @@ int LMS303::averageAccelFIFO(int slots){
 		sumZ += (int)tempZ;
 	}
 
-	this->accelX = convertAcceleration(sumX / slots);
-	this->accelY = convertAcceleration(sumY / slots);
-	this->accelZ = convertAcceleration(sumZ / slots);
+	accelX = convertAcceleration(sumX / slots);
+	accelY = convertAcceleration(sumY / slots);
+	accelZ = convertAcceleration(sumZ / slots);
 
 	return 0;
 }

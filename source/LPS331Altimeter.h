@@ -1,6 +1,6 @@
 /*
  * LPS331Altimeter.h
- *	For use with LPS331 altitude sensor as found in AltIMU-10. Note, must set bandwidth to enable
+ *	For use with LPS331 altitude sensor as found in AltIMU-10. Note, must set dataRate to enable
  *	measurements.
  *
  *  Created on: Jul 11, 2014
@@ -15,12 +15,12 @@
 
 #define LPS331_I2C_BUFFER	0x31	// There are 0x31 registers on this device
 
-enum LPS331_ALT_BANDWIDTH {
-	BW_ALT_ONE_SHOT		= 0,
-	BW_ALT_1HZ			= 1,
-	BW_ALT_7HZ			= 2,
-	BW_ALT_12p5HZ		= 3,
-	BW_ALT_25HZ			= 4
+enum LPS331_ALT_DATA_RATE {
+	DR_ALT_ONE_SHOT		= 0,
+	DR_ALT_1HZ			= 1,
+	DR_ALT_7HZ			= 2,
+	DR_ALT_12p5HZ		= 3,
+	DR_ALT_25HZ			= 4
 };
 
 class LPS331Altimeter {
@@ -45,7 +45,7 @@ public:
 
 	int reset();
 	int enableAltimeter();
-	int setAltBandwidth(LPS331_ALT_BANDWIDTH bandwidth);
+	int setAltDataRate(LPS331_ALT_DATA_RATE dataRate);
 	int readFullSensorState();
 
 	float getPressure() { return pressure; }

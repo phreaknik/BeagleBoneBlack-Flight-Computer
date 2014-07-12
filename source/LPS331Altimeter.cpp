@@ -1,6 +1,6 @@
 /*
  * LPS331Altimeter.cpp
- *	For use with LPS331 altitude sensor as found in AltIMU-10. Note, must set bandwidth to enable
+ *	For use with LPS331 altitude sensor as found in AltIMU-10. Note, must set dataRate to enable
  *	measurements.
  *
  *  Created on: Jul 11, 2014
@@ -51,7 +51,6 @@ LPS331Altimeter::LPS331Altimeter(int bus, int address) {
 	I2CBus = bus;
 	I2CAddress = address;
 
-	dataBuffer[LPS331_I2C_BUFFER];
 	pressure = 0;
 	altitude = 0;
 
@@ -85,7 +84,7 @@ int LPS331Altimeter::enableAltimeter() {
 		return 1;
 	}
 
-	setAltBandwidth(BW_ALT_7HZ);
+	setAltDataRate(DR_ALT_7HZ);
 	return 0;
 }
 
@@ -108,13 +107,13 @@ int LPS331Altimeter::readFullSensorState() {
 	return(0);
 }
 
-int LPS331Altimeter::setAltBandwidth(LPS331_ALT_BANDWIDTH bandwidth) {
+int LPS331Altimeter::setAltDataRate(LPS331_ALT_DATA_RATE dataRate) {
 	char buf[1];
 	readI2CDevice(REG_CTRL_REG1, buf, 1);	// Read current value
 	buf[0] &= 0x8F;	// Clear ODR bits
-	buf[0] |= (char)bandwidth << 4;	// Set new scale bits
+	buf[0] |= (char)dataRate << 4;	// Set new scale bits
 	if(writeI2CDeviceByte(REG_CTRL_REG1, buf[0])) {	// Set accelerometer SCALE
-		cout << "Failed to set altimeter bandwidth!" << endl;
+		cout << "Failed to set altimeter dataRate!" << endl;
 		return 1;
 	}
 	return 0;
