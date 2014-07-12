@@ -5,14 +5,17 @@
 # Add inputs and outputs from these tool invocations to the build variables 
 CPP_SRCS += \
 ../source/LMS303.cpp \
+../source/LPS331Altimeter.cpp \
 ../source/main.cpp 
 
 OBJS += \
 ./source/LMS303.o \
+./source/LPS331Altimeter.o \
 ./source/main.o 
 
 CPP_DEPS += \
 ./source/LMS303.d \
+./source/LPS331Altimeter.d \
 ./source/main.d 
 
 

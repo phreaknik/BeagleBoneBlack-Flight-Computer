@@ -4,7 +4,7 @@
  *	measurements.
  *
  *  Created on: Jul 3, 2014
- *      Author: phreaknux
+ *      Author: John Boyd
  *
  *  Reference:
  *  	http://www.inmotion.pt/store/altimu10-v3-gyro-accelerometer-compass-and-altimeter-l3gd20h
@@ -61,11 +61,8 @@ using namespace std;
 LMS303::LMS303(int bus, int address) {
 	I2CBus = bus;
 	I2CAddress = address;
-	reset();	// Reset device to default settings
-	enableMagnetometer();
-	enableAccelerometer();
-	enableTempSensor();
-	readFullSensorState();
+
+	dataBuffer[LMS303_I2C_BUFFER];
 
 	accelX = 0;
 	accelY = 0;
@@ -73,10 +70,17 @@ LMS303::LMS303(int bus, int address) {
 
 	pitch = 0;
 	roll = 0;
+
+	reset();	// Reset device to default settings
+	enableMagnetometer();
+	enableAccelerometer();
+	enableTempSensor();
+	readFullSensorState();
 }
 
 int LMS303::reset() {
-	cout << "Resetting LMS303 accelerometer..." << endl;
+	cout << "Resetting LMS303 accelerometer...\t";
+	// Reset control registers
 	writeI2CDeviceByte(REG_CTRL0, 0x80);	// Reboot LMS303 memory
 	writeI2CDeviceByte(REG_CTRL1, 0x00);	// Reset Accel settings
 	writeI2CDeviceByte(REG_CTRL2, 0x00);	// Reset Accel settings
@@ -86,8 +90,11 @@ int LMS303::reset() {
 	writeI2CDeviceByte(REG_CTRL6, 0x00);	// Reset MAG settings
 	writeI2CDeviceByte(REG_CTRL7, 0x00);	// Reset TEMP/MAG/ACCEL settings
 	writeI2CDeviceByte(REG_FIFO_SRC, 0x00);	// Set FIFO mode to Bypass
+
+	// Clear memory
 	memset(dataBuffer, 0, LMS303_I2C_BUFFER);	// Clear dataBuffer
 	memset(accelFIFO, 0, FIFO_SIZE);	// Clear accelFIFO
+
 	sleep(1);
 	cout << "Done." << endl;
 	return 0;
@@ -116,7 +123,7 @@ int LMS303::readFullSensorState() {
 		averageAccelFIFO(slotsRead);
 	}
 	else {	// No accel output averaging
-		readI2CDevice(0x0F, &dataBuffer[0x0F], LMS303_I2C_BUFFER-REG_WHO_AM_I);
+		readI2CDevice(REG_WHO_AM_I, &dataBuffer[REG_WHO_AM_I], LMS303_I2C_BUFFER-REG_WHO_AM_I);
 
 		accelX = convertAcceleration(REG_OUT_X_H_A, REG_OUT_X_L_A);
 		accelY = convertAcceleration(REG_OUT_Y_H_A, REG_OUT_Y_L_A);
@@ -366,7 +373,7 @@ int LMS303::readI2CDevice(char address, char data[], int size){
             cout << "Failed to open LMS303 Sensor on " << namebuf << " I2C Bus" << endl;
             return(1);
     }
-    if (ioctl(file, I2C_SLAVE, 0x1d) < 0){
+    if (ioctl(file, I2C_SLAVE, I2CAddress) < 0){
             cout << "I2C_SLAVE address " << 0x1d << " failed..." << endl;
             return(2);
     }

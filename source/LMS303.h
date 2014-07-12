@@ -4,7 +4,7 @@
  *	measurements.
  *
  *  Created on: Jul 3, 2014
- *      Author: phreaknux
+ *      Author: John Boyd
  *
  *  Reference:
  *  	http://www.inmotion.pt/store/altimu10-v3-gyro-accelerometer-compass-and-altimeter-l3gd20h
@@ -68,7 +68,7 @@ private:
 	int celsius;
 
 	int I2CBus, I2CAddress;
-	char dataBuffer[LMS303_I2C_BUFFER] = { 0x00 };
+	char dataBuffer[LMS303_I2C_BUFFER];
 	char accelFIFO[FIFO_SIZE];	// 16 FIFO slots * 6 Accel output registers
 	LMS303_ACCEL_MODE accelFIFOMode = FIFO_BYPASS;
 
