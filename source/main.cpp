@@ -10,9 +10,9 @@
 #include <fstream>
 #include <string>
 #include <unistd.h>
-#include "LMS303.h"
-#include "LPS331Altimeter.h"
-#include "L3GD20Gyro.h"
+#include "hardware/LMS303.h"
+#include "hardware/LPS331Altimeter.h"
+#include "hardware/L3GD20Gyro.h"
 
 using namespace std;
 
