@@ -2,6 +2,7 @@
 #define UIMU_AHRS_H
 
 #include "imumaths.h"
+#include <time.h>
 
 //initialises the AHRS
 void uimu_ahrs_init(imu::Vector<3> acc, imu::Vector<3> mag);

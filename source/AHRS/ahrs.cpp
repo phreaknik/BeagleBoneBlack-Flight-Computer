@@ -25,7 +25,9 @@ void uimu_ahrs_init(imu::Vector<3> acc, imu::Vector<3> mag) {
     m.vector_to_row(down, 2);
 
     q.fromMatrix(m);
-    last_millis = millis();
+    timespec timeStamp;
+    clock_gettime(CLOCK_MONOTONIC, &timeStamp);
+    last_millis = timeStamp.tv_nsec / 1000000;
 }
 
 

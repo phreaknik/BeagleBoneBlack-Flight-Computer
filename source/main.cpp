@@ -10,6 +10,7 @@
 #include <fstream>
 #include <string>
 #include <unistd.h>
+#include <time.h>
 #include "hardware/LMS303.h"
 #include "hardware/LPS331Altimeter.h"
 #include "hardware/L3GD20Gyro.h"
