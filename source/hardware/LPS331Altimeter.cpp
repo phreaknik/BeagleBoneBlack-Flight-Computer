@@ -10,18 +10,7 @@
  *  	http://www.inmotion.pt/store/altimu10-v3-gyro-accelerometer-compass-and-altimeter-l3gd20h
  */
 
-#include <stdlib.h>
-#include <string.h>
-#include <unistd.h>
-#include <fcntl.h>
-#include <linux/i2c.h>
-#include <linux/i2c-dev.h>
-#include <sys/ioctl.h>
-#include <stropts.h>
-#include <stdio.h>
 #include "LPS331Altimeter.h"
-#include <iostream>
-#include <math.h>
 using namespace std;
 
 
@@ -60,7 +49,7 @@ LPS331Altimeter::LPS331Altimeter(int bus, int address) {
 }
 
 int LPS331Altimeter::reset() {
-	cout << "Resetting LPS331 altimeter...\t";
+	cout << "Resetting LPS331 altimeter...\t\t" << std::flush;
 
 	// Reset device
 	writeI2CDeviceByte(REG_CTRL_REG2, 0x80);	// Reboot device

@@ -10,18 +10,8 @@
  *  	http://www.inmotion.pt/store/altimu10-v3-gyro-accelerometer-compass-and-altimeter-l3gd20h
  */
 
-#include <stdlib.h>
-#include <string.h>
-#include <unistd.h>
-#include <fcntl.h>
-#include <linux/i2c.h>
-#include <linux/i2c-dev.h>
-#include <sys/ioctl.h>
-#include <stropts.h>
-#include <stdio.h>
 #include "L3GD20Gyro.h"
-#include <iostream>
-#include <math.h>
+
 using namespace std;
 
 
@@ -65,7 +55,7 @@ L3GD20Gyro::L3GD20Gyro(int bus, int address) {
 }
 
 int L3GD20Gyro::reset() {
-	cout << "Resetting L3DG20 gyroscope...\t";
+	cout << "Resetting L3DG20 gyroscope...\t\t" << std::flush;
 
 	// Reset device
 	writeI2CDeviceByte(REG_CTRL5, 0x80);	// Reboot device
@@ -345,6 +335,11 @@ int L3GD20Gyro::averageGyroFIFO(int slots) {
 	gyroZ = convertGyroOutput(sumZ / slots);
 
 	return 0;
+}
+
+imu::Vector<3> L3GD20Gyro::read_gyro() {
+	imu::Vector<3> gyro(gyroX,gyroY,gyroZ);
+	return gyro;
 }
 
 L3GD20Gyro::~L3GD20Gyro() {

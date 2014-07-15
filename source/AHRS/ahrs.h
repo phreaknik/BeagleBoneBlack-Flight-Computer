@@ -9,7 +9,7 @@ void uimu_ahrs_init(imu::Vector<3> acc, imu::Vector<3> mag);
 
 void uimu_ahrs_set_offset(imu::Quaternion o);
 
-//sets the beta. this controls how strong the drift correction will be.
+//sets the beta. this controls how strong the drift correction will be. 
 //a higher beta means more correction
 void uimu_ahrs_set_beta(float beta);
 
@@ -26,3 +26,4 @@ imu::Quaternion uimu_ahrs_get_imu_quaternion();
 
 
 #endif
+

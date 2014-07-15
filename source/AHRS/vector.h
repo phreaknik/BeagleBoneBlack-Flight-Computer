@@ -15,11 +15,7 @@
 
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
-	Reference:
-		http://sourceforge.net/p/ce10dofahrs/code/ci/master/tree/
-  		http://www.inmotion.pt/store/altimu10-v3-gyro-accelerometer-compass-and-altimeter-l3gd20h
- */
+*/
 
 #ifndef IMUMATH_VECTOR_HPP
 #define IMUMATH_VECTOR_HPP
@@ -33,30 +29,32 @@
 namespace imu
 {
 
-template <uint8_t N> class Vector {
-private:
-    double* p_vec;
-
+template <uint8_t N> class Vector
+{
 public:
-	Vector() {
+	Vector()
+	{
 		p_vec = (double*)malloc(sizeof(double)*N+1);
         memset(p_vec, 0, sizeof(double)*N);
 	}
 
-	Vector(double a) {
+	Vector(double a)
+	{
 		p_vec = (double*)malloc(sizeof(double)*N+1);
         memset(p_vec, 0, sizeof(double)*N);
 		p_vec[0] = a;
 	}
 
-	Vector(double a, double b) {
+	Vector(double a, double b)
+	{
 		p_vec = (double*)malloc(sizeof(double)*N+1);
         memset(p_vec, 0, sizeof(double)*N);
 		p_vec[0] = a;
 		p_vec[1] = b;
 	}
 
-	Vector(double a, double b, double c) {
+	Vector(double a, double b, double c)
+	{
 		p_vec = (double*)malloc(sizeof(double)*N+1);
         memset(p_vec, 0, sizeof(double)*N);
 		p_vec[0] = a;
@@ -64,7 +62,8 @@ public:
 		p_vec[2] = c;
 	}
 
-    Vector(double a, double b, double c, double d) {
+    Vector(double a, double b, double c, double d)
+    {
 		p_vec = (double*)malloc(sizeof(double)*N+1);
         memset(p_vec, 0, sizeof(double)*N);
         p_vec[0] = a;
@@ -73,63 +72,64 @@ public:
 		p_vec[3] = d;
     }
 
-    Vector(const Vector<N> &v) {
+    Vector(const Vector<N> &v)
+    {
         p_vec = (double*)malloc(sizeof(double)*N);
         memset(p_vec, 0, sizeof(double)*N);
-        for (int x = 0; x < N; x++ ) {
+        for (int x = 0; x < N; x++ )
             p_vec[x] = v.p_vec[x];
-        }
     }
 
-    ~Vector() {
+    ~Vector()
+    {
         free(p_vec);
     }
 
     uint8_t n() { return N; }
 
-    double magnitude() {
+    double magnitude()
+    {
         double res = 0;
-        for(int i = 0; i < N; i++) {
+        int i;
+        for(i = 0; i < N; i++)
             res += (p_vec[i] * p_vec[i]);
-        }
 
-        if(isnan(res)) {
+        if(isnan(res))
             return 0;
-        }
-        if((fabs(res)-1) >= 0.000001) { //avoid a sqrt if possible
+        if((fabs(res)-1) >= 0.000001) //avoid a sqrt if possible
             return sqrt(res);
-        }
         return 1;
     }
 
-    void normalize() {
+    void normalize()
+    {
         double mag = magnitude();
-        if(abs(mag) <= 0.0001) {
+        if(abs(mag) <= 0.0001)
             return;
-        }
 
-        for(int i = 0; i < N; i++) {
+        int i;
+        for(i = 0; i < N; i++)
             p_vec[i] = p_vec[i]/mag;
-        }
     }
 
-    double dot(Vector v) {
+    double dot(Vector v)
+    {
         double ret = 0;
-        for(int i = 0; i < N; i++) {
+        int i;
+        for(i = 0; i < N; i++)
             ret += p_vec[i] * v.p_vec[i];
-        }
 
         return ret;
     }
 
-    Vector cross(Vector v) {
+    Vector cross(Vector v)
+    {
         Vector ret;
 
          //the cross product is only valid for vectors with 3 dimensions,
          //with the exception of higher dimensional stuff that is beyond the intended scope of this library
-        if(N != 3) {
+        if(N != 3)
             return ret;
-        }
 
         ret.p_vec[0] = (p_vec[1] * v.p_vec[2]) - (p_vec[2] * v.p_vec[1]);
         ret.p_vec[1] = (p_vec[2] * v.p_vec[0]) - (p_vec[0] * v.p_vec[2]);
@@ -137,87 +137,90 @@ public:
         return ret;
     }
 
-    Vector scale(double scalar) {
+    Vector scale(double scalar)
+    {
         Vector ret;
-        for(int i = 0; i < N; i++) {
+        for(int i = 0; i < N; i++)
             ret.p_vec[i] = p_vec[i] * scalar;
-        }
         return ret;
     }
 
-    Vector invert() {
+    Vector invert()
+    {
         Vector ret;
-        for(int i = 0; i < N; i++) {
+        for(int i = 0; i < N; i++)
             ret.p_vec[i] = -p_vec[i];
-        }
         return ret;
     }
 
-    Vector operator = (Vector v) {
-        for (int x = 0; x < N; x++ ) {
+    Vector operator = (Vector v)
+    {
+        for (int x = 0; x < N; x++ )
             p_vec[x] = v.p_vec[x];
-        }
 		return *this;
     }
 
-    double& operator [](int n) {
+    double& operator [](int n)
+    {
         return p_vec[n];
     }
 
-    double& operator ()(int n) {
+    double& operator ()(int n)
+    {
         return p_vec[n];
     }
 
-    Vector operator + (Vector v) {
+    Vector operator + (Vector v)
+    {
         Vector ret;
-        for(int i = 0; i < N; i++) {
+        for(int i = 0; i < N; i++)
             ret.p_vec[i] = p_vec[i] + v.p_vec[i];
-        }
         return ret;
     }
 
-    Vector operator - (Vector v) {
+    Vector operator - (Vector v)
+    {
         Vector ret;
-        for(int i = 0; i < N; i++) {
+        for(int i = 0; i < N; i++)
             ret.p_vec[i] = p_vec[i] - v.p_vec[i];
-        }
         return ret;
     }
 
-    Vector operator * (double scalar) {
+    Vector operator * (double scalar)
+    {
         return scale(scalar);
     }
 
-    Vector operator / (double scalar) {
+    Vector operator / (double scalar)
+    {
         Vector ret;
-        for(int i = 0; i < N; i++) {
+        for(int i = 0; i < N; i++)
             ret.p_vec[i] = p_vec[i] / scalar;
-        }
         return ret;
     }
 
-    void toDegrees() {
-        for(int i = 0; i < N; i++) {
+    void toDegrees()
+    {
+        for(int i = 0; i < N; i++)
             p_vec[i] *= 180/M_PI;
-        }
     }
 
-    void toRadians() {
-        for(int i = 0; i < N; i++) {
+    void toRadians()
+    {
+        for(int i = 0; i < N; i++)
             p_vec[i] *= M_PI/180.0;
-        }
     }
 
     double& x() { return p_vec[0]; }
     double& y() { return p_vec[1]; }
     double& z() { return p_vec[2]; }
+
+
+private:
+    double* p_vec;
 };
 
 
 };
 
-#endif /* IMUMATH_VECTOR_HPP */
-
-
-
-
+#endif

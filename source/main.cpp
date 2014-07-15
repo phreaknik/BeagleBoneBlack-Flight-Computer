@@ -10,46 +10,48 @@
 #include <fstream>
 #include <string>
 #include <unistd.h>
-#include <time.h>
 #include "hardware/LMS303.h"
 #include "hardware/LPS331Altimeter.h"
 #include "hardware/L3GD20Gyro.h"
+#include "AHRS/ahrs.h"
 
 using namespace std;
 
+unsigned long delta_t = 0;
+
+unsigned long micros();
+
 int main(int argc, char* argv[]) {
-	LMS303 accel1(1, 0x1d);
-	LPS331Altimeter alt1(1, 0x5d);
-	L3GD20Gyro gyro1(1, 0x6b);
+	LMS303 lms303(1, 0x1d);
+	LPS331Altimeter alt(1, 0x5d);
+	L3GD20Gyro gyro(1, 0x6b);
+
+	// AHRS initialization
+	imu::Vector<3> acc = lms303.read_acc();
+	imu::Vector<3> mag = lms303.read_mag();
+	uimu_ahrs_init(acc, mag);
+	uimu_ahrs_set_beta(0.1);
 
 	while(1) {
-		accel1.readFullSensorState();
-		alt1.readFullSensorState();
-		gyro1.readFullSensorState();
+		// execute at ~50Hz
+		unsigned long time = micros();
+		if((time - delta_t) < 20000) continue; // Wont let execution pass this line until 20ms has passed
+		delta_t = time;
 
-		cout << "##################################\n";
-		cout << "Magnetism X:\t" << accel1.getMagX() << " gauss" << endl;
-		cout << "Magnetism Y:\t" << accel1.getMagY() << " gauss" << endl;
-		cout << "Magnetism Z:\t" << accel1.getMagZ() << " gauss" << endl << endl;
+		lms303.readFullSensorState();
+		gyro.readFullSensorState();
+		alt.readFullSensorState();
+		uimu_ahrs_iterate(lms303.read_acc(), gyro.read_gyro(), lms303.read_mag());
 
-		cout << "Accel X:\t" << accel1.getAccelX() << " g" << endl;
-		cout << "Accel Y:\t" << accel1.getAccelY() << " g" << endl;
-		cout << "Accel Z:\t" << accel1.getAccelZ() << " g" << endl << endl;
-
-		cout << "Pitch:\t" << accel1.getPitch() << "\u00b0" << endl;
-		cout << "Roll:\t" << accel1.getRoll() << "\u00b0" << endl << endl;
-
-		cout << "Core temperature:\t" << accel1.getTemperature() << "\u00b0" << endl << endl;
-
-		cout << "Pressure:\t" << alt1.getPressure() << " mBar" << endl;
-		cout << "Altitude:\t" << alt1.getAltitude() << " m" << endl << endl;
-
-		cout << "Roll X:\t" << gyro1.getGyroX() << " \u00b0/s" << endl;
-		cout << "Roll Y:\t" << gyro1.getGyroY() << " \u00b0/s" << endl;
-		cout << "Roll Z:\t" << gyro1.getGyroZ() << " \u00b0/s" << endl;
-
-		sleep(1);
+		imu::Vector<3> euler = uimu_ahrs_get_euler();
+		cout<< "euler: " << euler.x() << " " << euler.y() << " " << euler.z() << "\n";
 	}
 
 	return 0;
+}
+
+unsigned long micros() {
+	timespec timeStamp;
+	clock_gettime(CLOCK_MONOTONIC, &timeStamp);
+	return timeStamp.tv_nsec / 1000;
 }

@@ -13,6 +13,18 @@
 #ifndef LPS331Altimeter_H_
 #define LPS331Altimeter_H_
 
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+#include <fcntl.h>
+#include <linux/i2c.h>
+#include <linux/i2c-dev.h>
+#include <sys/ioctl.h>
+#include <stropts.h>
+#include <stdio.h>
+#include <iostream>
+#include <math.h>
+
 #define LPS331_I2C_BUFFER	0x31	// There are 0x31 registers on this device
 
 enum LPS331_ALT_DATA_RATE {

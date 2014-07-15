@@ -13,6 +13,19 @@
 #ifndef LMS303_H_
 #define LMS303_H_
 
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+#include <fcntl.h>
+#include <linux/i2c.h>
+#include <linux/i2c-dev.h>
+#include <sys/ioctl.h>
+#include <stropts.h>
+#include <stdio.h>
+#include <iostream>
+#include <math.h>
+#include "../AHRS/imumaths.h"
+
 #define LMS303_I2C_BUFFER		0x40	// Only 0x40 registers available according to LMS303 datasheet
 #define ACCEL_FIFO_SLOTS				0x0F	// Number of slots in FIFO for each accelerometer output
 #define ACCEL_FIFO_SIZE 				0x60	// Size of FIFO array
@@ -122,6 +135,9 @@ public:
 	float getAccelX() { return accelX; }
 	float getAccelY() { return accelY; }
 	float getAccelZ() { return accelZ; }
+
+	imu::Vector<3> read_acc();
+	imu::Vector<3> read_mag();
 
 	float getPitch() { return pitch; }
 	float getRoll() { return roll; }

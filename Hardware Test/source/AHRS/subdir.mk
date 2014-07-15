@@ -4,17 +4,17 @@
 
 # Add inputs and outputs from these tool invocations to the build variables 
 CPP_SRCS += \
-../source/main-hardwareTest.cpp 
+../source/AHRS/ahrs.cpp 
 
 OBJS += \
-./source/main-hardwareTest.o 
+./source/AHRS/ahrs.o 
 
 CPP_DEPS += \
-./source/main-hardwareTest.d 
+./source/AHRS/ahrs.d 
 
 
 # Each subdirectory must supply rules for building sources it contributes
-source/%.o: ../source/%.cpp
+source/AHRS/%.o: ../source/AHRS/%.cpp
 	@echo 'Building file: $<'
 	@echo 'Invoking: Cross G++ Compiler'
 	arm-linux-gnueabihf-g++ -O0 -g3 -Wall -c -fmessage-length=0 -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -o "$@" "$<"

@@ -11,18 +11,8 @@
  *  	http://inmotion.pt/documentation/pololu/POL-2469/LSM303D.pdf
  */
 
-#include <stdlib.h>
-#include <string.h>
-#include <unistd.h>
-#include <fcntl.h>
-#include <linux/i2c.h>
-#include <linux/i2c-dev.h>
-#include <sys/ioctl.h>
-#include <stropts.h>
-#include <stdio.h>
 #include "LMS303.h"
-#include <iostream>
-#include <math.h>
+
 using namespace std;
 
 #define MAX_BUS					64
@@ -77,7 +67,7 @@ LMS303::LMS303(int bus, int address) {
 }
 
 int LMS303::reset() {
-	cout << "Resetting LMS303 accelerometer...\t";
+	cout << "Resetting LMS303 accelerometer...\t" << std::flush;
 	// Reset control registers
 	writeI2CDeviceByte(REG_CTRL0, 0x80);	// Reboot LMS303 memory
 	writeI2CDeviceByte(REG_CTRL1, 0x00);	// Reset Accel settings
@@ -490,6 +480,16 @@ int LMS303::averageAccelFIFO(int slots){
 	accelZ = convertAcceleration(sumZ / slots);
 
 	return 0;
+}
+
+imu::Vector<3> LMS303::read_acc() {
+	imu::Vector<3> acc(accelX, accelY, accelZ);
+	return acc;
+}
+
+imu::Vector<3> LMS303::read_mag() {
+	imu::Vector<3> mag(magX,magY,magZ);
+	return mag;
 }
 
 LMS303::~LMS303() {

@@ -13,6 +13,19 @@
 #ifndef L3GD20Gyro_H_
 #define L3GD20Gyro_H_
 
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+#include <fcntl.h>
+#include <linux/i2c.h>
+#include <linux/i2c-dev.h>
+#include <sys/ioctl.h>
+#include <stropts.h>
+#include <stdio.h>
+#include <iostream>
+#include <math.h>
+#include "../AHRS/imumaths.h"
+
 #define L3GD20_I2C_BUFFER	0x40	// There are 0x31 registers on this device
 #define GYRO_FIFO_SLOTS			0x20	// Number of slots in fifo for each axis
 #define GYRO_FIFO_SIZE			0xC0	// 32 slots * 6 FIFO registers
@@ -71,6 +84,8 @@ public:
 	float getGyroX() { return gyroX; }
 	float getGyroY() { return gyroY; }
 	float getGyroZ() { return gyroZ; }
+
+	imu::Vector<3> read_gyro();
 
 	virtual ~L3GD20Gyro();
 };

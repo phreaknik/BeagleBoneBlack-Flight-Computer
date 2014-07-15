@@ -15,11 +15,7 @@
 
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
-	Reference:
-		http://sourceforge.net/p/ce10dofahrs/code/ci/master/tree/
-  		http://www.inmotion.pt/store/altimu10-v3-gyro-accelerometer-compass-and-altimeter-l3gd20h
- */
+*/
 
 #ifndef IMUMATH_MATRIX_HPP
 #define IMUMATH_MATRIX_HPP
@@ -33,18 +29,18 @@ namespace imu
 {
 
 
-template <uint8_t N> class Matrix {
-private:
-    double* _cell;
-
+template <uint8_t N> class Matrix
+{
 public:
-	Matrix() {
+	Matrix()
+	{
 		int r = sizeof(double)*N;
         _cell = (double*)malloc(r*r);
         memset(_cell, 0, r*r);
 	}
 
-    Matrix(const Matrix &v) {
+    Matrix(const Matrix &v)
+    {
         int r = sizeof(double)*N;
         _cell = (double*)malloc(r*r);
         memset(_cell, 0, r*r);
@@ -57,11 +53,13 @@ public:
         }
     }
 
-    ~Matrix() {
+    ~Matrix()
+    {
         free(_cell);
     }
 
-    void operator = (Matrix m) {
+    void operator = (Matrix m)
+    {
         for(int x = 0; x < N; x++)
         {
             for(int y = 0; y < N; y++)
@@ -71,7 +69,8 @@ public:
         }
     }
 
-    Vector<N> row_to_vector(int y) {
+    Vector<N> row_to_vector(int y)
+    {
         Vector<N> ret;
         for(int i = 0; i < N; i++)
         {
@@ -80,7 +79,8 @@ public:
         return ret;
     }
 
-    Vector<N> col_to_vector(int x) {
+    Vector<N> col_to_vector(int x)
+    {
         Vector<N> ret;
         for(int i = 0; i < N; i++)
         {
@@ -89,30 +89,35 @@ public:
         return ret;
     }
 
-    void vector_to_row(Vector<N> v, int row) {
+    void vector_to_row(Vector<N> v, int row)
+    {
         for(int i = 0; i < N; i++)
         {
             cell(row, i) = v(i);
         }
     }
 
-    void vector_to_col(Vector<N> v, int col) {
+    void vector_to_col(Vector<N> v, int col)
+    {
         for(int i = 0; i < N; i++)
         {
             cell(i, col) = v(i);
         }
     }
 
-    double& operator ()(int x, int y) {
+    double& operator ()(int x, int y)
+    {
         return _cell[x*N+y];
     }
 
-    double& cell(int x, int y) {
+    double& cell(int x, int y)
+    {
         return _cell[x*N+y];
     }
 
 
-    Matrix operator + (Matrix m) {
+    Matrix operator + (Matrix m)
+    {
         Matrix ret;
         for(int x = 0; x < N; x++)
         {
@@ -124,7 +129,8 @@ public:
         return ret;
     }
 
-    Matrix operator - (Matrix m) {
+    Matrix operator - (Matrix m)
+    {
         Matrix ret;
         for(int x = 0; x < N; x++)
         {
@@ -136,7 +142,8 @@ public:
         return ret;
     }
 
-    Matrix operator * (double scalar) {
+    Matrix operator * (double scalar)
+    {
         Matrix ret;
         for(int x = 0; x < N; x++)
         {
@@ -148,7 +155,8 @@ public:
         return ret;
     }
 
-    Matrix operator * (Matrix m) {
+    Matrix operator * (Matrix m)
+    {
         Matrix ret;
         for(int x = 0; x < N; x++)
         {
@@ -162,7 +170,8 @@ public:
         return ret;
     }
 
-    Matrix transpose() {
+    Matrix transpose()
+    {
         Matrix ret;
         for(int x = 0; x < N; x++)
         {
@@ -174,7 +183,8 @@ public:
         return ret;
     }
 
-    Matrix<N-1> minor_matrix(int row, int col) {
+    Matrix<N-1> minor_matrix(int row, int col)
+    {
         int colCount = 0, rowCount = 0;
         Matrix<N-1> ret;
         for(int i = 0; i < N; i++ )
@@ -195,7 +205,8 @@ public:
         return ret;
     }
 
-    double determinant() {
+    double determinant()
+    {
         if(N == 1)
             return cell(0, 0);
 
@@ -208,7 +219,8 @@ public:
         return det;
     }
 
-    Matrix invert() {
+    Matrix invert()
+    {
         Matrix ret;
         float det = determinant();
 
@@ -224,9 +236,13 @@ public:
         }
         return ret;
     }
+
+private:
+    double* _cell;
 };
 
 
 };
 
 #endif
+
