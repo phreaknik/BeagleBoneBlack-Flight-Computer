@@ -15,39 +15,6 @@
 
 using namespace std;
 
-#define MAX_BUS					64
-
-#define REG_TEMP_OUT_L			0x05
-#define REG_TEMP_OUT_H			0x06
-#define REG_STATUS_M			0x07
-#define REG_OUT_X_L_M			0x08
-#define REG_OUT_X_H_M			0x09
-#define REG_OUT_Y_L_M			0x0A
-#define REG_OUT_Y_H_M			0x0B
-#define REG_OUT_Z_L_M			0x0C
-#define REG_OUT_Z_H_M			0x0D
-#define REG_WHO_AM_I			0x0F
-#define REG_INT_CTRL_M			0x12
-#define REG_CTRL0				0x1F
-#define REG_CTRL1				0x20
-#define REG_CTRL2				0x21
-#define REG_CTRL3				0x22
-#define REG_CTRL4				0x23
-#define REG_CTRL5				0x24
-#define REG_CTRL6				0x25
-#define REG_CTRL7				0x26
-#define REG_STATUS_A			0x27
-#define REG_OUT_X_L_A			0x28
-#define REG_OUT_X_H_A			0x29
-#define REG_OUT_Y_L_A			0x2A
-#define REG_OUT_Y_H_A			0x2B
-#define REG_OUT_Z_L_A			0x2C
-#define REG_OUT_Z_H_A			0x2D
-#define REG_FIFO_CTRL			0x2E
-#define REG_FIFO_SRC			0x2F
-#define REG_IG_CFG1				0x30
-
-
 LMS303::LMS303(int bus, int address) {
 	I2CBus = bus;
 	I2CAddress = address;
@@ -161,14 +128,14 @@ int LMS303::getTemperature() {
 	if(temp & 0x0800) temp |= 0x8000;
 	else temp &= 0x0FFF;
 
-	celsius = (int)temp;
+	celsius = 1/(float)temp;
 
 	return celsius;
 }
 
 int LMS303::enableMagnetometer() {
-	setMagDataRate(DR_MAG_12p5HZ);	// Set dataRate to enable device.
-	setMagScale(SCALE_MAG_2gauss);	// Set accelerometer SCALE
+	setMagDataRate(DR_MAG_100HZ);	// Set dataRate to enable device.
+	setMagScale(SCALE_MAG_8gauss);	// Set accelerometer SCALE
 
 	char buf[1] = {0x00};
 	readI2CDevice(REG_CTRL7, buf, 1);	// Read current register state
@@ -183,31 +150,33 @@ int LMS303::enableMagnetometer() {
 
 int LMS303::setMagScale(LMS303_MAG_SCALE scale) {	// Set magnetometer output rate
 	char buf = (char)scale << 5;		// Clear low-power bit and mode bits
+	buf &= 0x60;	// Ensure protected bits are not written to
 	if(writeI2CDeviceByte(REG_CTRL6, buf)) {
 		cout << "Failed to set magnetometer scale!" << endl;
-		magFullScale = 0;
+		magScale = 0;
 		return 1;
 	}
 
 	switch(scale){
 	case SCALE_MAG_2gauss: {
-		magFullScale = 2;
+		magScale = .00008;
 		break;
 	}
 	case SCALE_MAG_4gauss: {
-		magFullScale = 4;
+		magScale = .00016;
 		break;
 	}
 	case SCALE_MAG_8gauss: {
-		magFullScale = 8;
+		magScale = .00032;
 		break;
 	}
 	case SCALE_MAG_12gauss: {
-		magFullScale = 12;
+		magScale = .000479;
 		break;
 	}
 	default: {
-		magFullScale = 0;
+		cout << "ERROR! Invalid magnetometer scale." << endl;
+		magScale = 0;
 		return 1;
 		break;
 	}
@@ -218,8 +187,8 @@ int LMS303::setMagScale(LMS303_MAG_SCALE scale) {	// Set magnetometer output rat
 int LMS303::setMagDataRate(LMS303_MAG_DATA_RATE dataRate) {	// Set magnetometer SCALE
 	char buf[1] = {0x00};
 	readI2CDevice(REG_CTRL5, buf, 1);	// Read current register state
-	buf[0] &= 0x82;		// Clear resolution and dataRate bits
-	buf[0] |= 0x20;	// Set resolution bits to medium resolution
+	buf[0] &= 0x83;		// Clear resolution and dataRate bits
+	buf[0] |= 0x60;	// Set resolution bits to high resolution
 	buf[0] |= (char)dataRate << 2;	// Set dataRate bits
 	if(writeI2CDeviceByte(REG_CTRL5, buf[0])) {	// write back to ctrl register
 		cout << "Failed to set magnetometer dataRate!" << endl;
@@ -231,12 +200,12 @@ int LMS303::setMagDataRate(LMS303_MAG_DATA_RATE dataRate) {	// Set magnetometer 
 float LMS303::convertMagnetism(int msb_reg_addr, int lsb_reg_addr){
 	short temp = dataBuffer[msb_reg_addr];
 	temp = (temp<<8) | dataBuffer[lsb_reg_addr];
-	return ((float)temp * (float)magFullScale) / (float)0x8000;	// Convert to gauss
+	return ((float)temp * magScale);	// Convert to gauss
 }
 
 int LMS303::enableAccelerometer() {
-	setAccelDataRate(DR_ACCEL_100HZ);	// Set dataRate to enable device.
-	setAccelScale(SCALE_ACCEL_2g);	// Set accelerometer SCALE
+	setAccelDataRate(DR_ACCEL_16OOHZ);	// Set dataRate to enable device.
+	setAccelScale(SCALE_ACCEL_8g);	// Set accelerometer SCALE
 	setAccelFIFOMode(ACCEL_FIFO_STREAM);	// Enable FIFO for easy output averaging
 
 	char buf[1] = {0x00};
@@ -257,33 +226,34 @@ int LMS303::setAccelScale(LMS303_ACCEL_SCALE scale) {
 	buf[0] |= (char)scale << 3;	// Set new scale bits
 	if(writeI2CDeviceByte(REG_CTRL2, buf[0])) {	// Set accelerometer SCALE
 		cout << "Failed to set accelerometer scale!" << endl;
-		accelFullScale = 0;
+		accelScale = 0;
 		return 1;
 	}
 
 	switch(scale){
 	case SCALE_ACCEL_2g: {
-		accelFullScale = 2;
+		accelScale = .000061;
 		break;
 	}
 	case SCALE_ACCEL_4g: {
-		accelFullScale = 4;
+		accelScale = .000122;
 		break;
 	}
 	case SCALE_ACCEL_6g: {
-		accelFullScale = 6;
+		accelScale = .000183;
 		break;
 	}
 	case SCALE_ACCEL_8g: {
-		accelFullScale = 8;
+		accelScale = .000244;
 		break;
 	}
 	case SCALE_ACCEL_16g: {
-		accelFullScale = 16;
+		accelScale = .000732;
 		break;
 	}
 	default: {
-		accelFullScale = 0;
+		cout << "ERROR! Invalid accelerometer scale." << endl;
+		accelScale = 0;
 		return 1;
 		break;
 	}
@@ -302,17 +272,21 @@ void LMS303::calculatePitchAndRoll() {
 float LMS303::convertAcceleration(int msb_reg_addr, int lsb_reg_addr){
 	short temp = dataBuffer[msb_reg_addr];
 	temp = (temp<<8) | dataBuffer[lsb_reg_addr];
-	return ((float)temp * (float)accelFullScale) / (float)0x8000;	// Convert to g's
+	return ((float)temp * accelScale);	// Convert to g's
 }
 
 float LMS303::convertAcceleration(int accel) {
-	return ((float)accel * (float)accelFullScale) / (float)0x8000;	// Convert to g's
+	return ((float)accel * accelScale);	// Convert to g's
 }
 
 int LMS303::setAccelDataRate(LMS303_ACCEL_DATA_RATE dataRate){
-	char temp = dataRate << 4;	//move value into bits 7,6,5,4
 
-	if(writeI2CDeviceByte(REG_CTRL1, temp)!=0){
+	char buf[1];
+	readI2CDevice(REG_CTRL1, buf, 1);	// Read current value
+	buf[0] &= 0x0F;	// Clear scale bits
+	buf[0] |= (char)dataRate << 4;	// Set new scale bits
+
+	if(writeI2CDeviceByte(REG_CTRL1, buf[0])!=0){
 		cout << "Failure to update dataRate value!" << endl;
 		return 1;
 	}

@@ -29,6 +29,35 @@
 #define L3GD20_I2C_BUFFER	0x40	// There are 0x31 registers on this device
 #define GYRO_FIFO_SLOTS			0x20	// Number of slots in fifo for each axis
 #define GYRO_FIFO_SIZE			0xC0	// 32 slots * 6 FIFO registers
+#define MAX_BUS						64
+
+#define REG_WHO_AM_I				0x0F
+#define REG_CTRL1					0x20
+#define REG_CTRL2					0x21
+#define REG_CTRL3					0x22
+#define REG_CTRL4					0x23
+#define REG_CTRL5					0x24
+#define REG_REFERENCE				0x25
+#define REG_OUT_TEMP				0x26
+#define REG_STATUS					0x27
+#define REG_OUT_X_L					0x28
+#define REG_OUT_X_H					0x29
+#define REG_OUT_Y_L					0x2A
+#define REG_OUT_Y_H					0x2B
+#define REG_OUT_Z_L					0x2C
+#define REG_OUT_Z_H					0x2D
+#define REG_FIFO_CTRL				0x2E
+#define REG_FIFO_SRC				0x2F
+#define REG_IG_CFG					0x30
+#define REG_IG_SRC					0x31
+#define REG_IG_THS_XH				0x32
+#define REG_IG_THS_XL				0x33
+#define REG_IG_THS_YH				0x34
+#define REG_IG_THS_YL				0x35
+#define REG_IG_THS_ZH				0x36
+#define REG_IG_THS_ZL				0x37
+#define REG_IG_DURATION				0x38
+#define REG_LOW_ODR					0x39
 
 enum L3GD20_GYRO_SCALE {
 	SCALE_GYRO_245dps		= 0,
@@ -58,7 +87,7 @@ private:
 	char gyroFIFO[GYRO_FIFO_SIZE];
 	L3GD20_GYRO_FIFO_MODE gyroFIFOMode = GYRO_FIFO_BYPASS;
 
-	int gyroFullScale;
+	float gyroScale;
 	float gyroX;
 	float gyroY;
 	float gyroZ;

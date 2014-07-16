@@ -25,9 +25,7 @@ void uimu_ahrs_init(imu::Vector<3> acc, imu::Vector<3> mag) {
     m.vector_to_row(down, 2);
 
     q.fromMatrix(m);
-    timespec timeStamp;
-    clock_gettime(CLOCK_MONOTONIC, &timeStamp);
-    last_micros = timeStamp.tv_nsec / 1000;
+    last_micros = micros();
 }
 
 
@@ -40,13 +38,10 @@ void uimu_ahrs_set_beta(float b) {
 }
 
 void uimu_ahrs_iterate(imu::Vector<3> ang_vel, imu::Vector<3> acc, imu::Vector<3> mag) {
-	timespec timeStamp;
-	clock_gettime(CLOCK_MONOTONIC, &timeStamp);
-	double time = timeStamp.tv_nsec / 1000;
-	double dt = time - last_micros;
-    last_micros = ( timeStamp.tv_nsec / 1000 );
-
+	double dt = micros() - last_micros;
+    last_micros = micros();
     dt /= 1000000.0;
+    std::cout << "dt: " << dt << std::endl;
 
 	if(dt == 0)
 		return;

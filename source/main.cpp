@@ -6,22 +6,14 @@
 // Description : Main function for Beaglebone Black flight computer.
 //============================================================================
 
-#include <iostream>
-#include <fstream>
-#include <string>
-#include <unistd.h>
-#include "hardware/LMS303.h"
-#include "hardware/LPS331Altimeter.h"
-#include "hardware/L3GD20Gyro.h"
-#include "AHRS/ahrs.h"
+#include "BBB-FlightComputer/BBB-FlightComputer.h"
+
+unsigned long delta_t;
 
 using namespace std;
 
-unsigned long delta_t = 0;
-
-unsigned long micros();
-
 int main(int argc, char* argv[]) {
+
 	LMS303 lms303(1, 0x1d);
 	LPS331Altimeter alt(1, 0x5d);
 	L3GD20Gyro gyro(1, 0x6b);
@@ -36,22 +28,51 @@ int main(int argc, char* argv[]) {
 		// execute at ~50Hz
 		unsigned long time = micros();
 		if((time - delta_t) < 20000) continue; // Wont let execution pass this line until 20ms has passed
+		//cout << "Delta T: " << time - delta_t << endl;
 		delta_t = time;
 
 		lms303.readFullSensorState();
 		gyro.readFullSensorState();
 		alt.readFullSensorState();
-		uimu_ahrs_iterate(lms303.read_acc(), gyro.read_gyro(), lms303.read_mag());
+		uimu_ahrs_iterate(gyro.read_gyro(), lms303.read_acc(), lms303.read_mag());
 
 		imu::Vector<3> euler = uimu_ahrs_get_euler();
 		cout<< "euler: " << euler.x() << " " << euler.y() << " " << euler.z() << "\n";
 	}
+	/* Hardware test
+	LMS303 lms303(1, 0x1d);
+	LPS331Altimeter lps331(1, 0x5d);
+	L3GD20Gyro l3gd20(1, 0x6b);
+
+	while(1) {
+		lms303.readFullSensorState();
+		lps331.readFullSensorState();
+		l3gd20.readFullSensorState();
+
+		cout << "##################################\n";
+		cout << "Magnetism X:\t" << lms303.getMagX() << " gauss" << endl;
+		cout << "Magnetism Y:\t" << lms303.getMagY() << " gauss" << endl;
+		cout << "Magnetism Z:\t" << lms303.getMagZ() << " gauss" << endl << endl;
+
+		cout << "Accel X:\t" << lms303.getAccelX() << " g" << endl;
+		cout << "Accel Y:\t" << lms303.getAccelY() << " g" << endl;
+		cout << "Accel Z:\t" << lms303.getAccelZ() << " g" << endl << endl;
+
+		cout << "Pitch:\t" << lms303.getPitch() << "\u00b0" << endl;
+		cout << "Roll:\t" << lms303.getRoll() << "\u00b0" << endl << endl;
+
+		cout << "Core temperature:\t" << lms303.getTemperature() << "\u00b0C" << endl << endl;
+
+		cout << "Pressure:\t" << lps331.getPressure() << " mBar" << endl;
+		cout << "Altitude:\t" << lps331.getAltitude() << " m" << endl << endl;
+
+		cout << "Roll X:\t" << l3gd20.getGyroX() << " \u00b0/s" << endl;
+		cout << "Roll Y:\t" << l3gd20.getGyroY() << " \u00b0/s" << endl;
+		cout << "Roll Z:\t" << l3gd20.getGyroZ() << " \u00b0/s" << endl;
+
+		sleep(1);
+
+	}*/ // \Hardware test
 
 	return 0;
-}
-
-unsigned long micros() {
-	timespec timeStamp;
-	clock_gettime(CLOCK_MONOTONIC, &timeStamp);
-	return timeStamp.tv_nsec / 1000;
 }

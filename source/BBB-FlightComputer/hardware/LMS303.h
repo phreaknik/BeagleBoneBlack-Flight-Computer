@@ -29,6 +29,37 @@
 #define LMS303_I2C_BUFFER		0x40	// Only 0x40 registers available according to LMS303 datasheet
 #define ACCEL_FIFO_SLOTS				0x0F	// Number of slots in FIFO for each accelerometer output
 #define ACCEL_FIFO_SIZE 				0x60	// Size of FIFO array
+#define MAX_BUS					64
+
+#define REG_TEMP_OUT_L			0x05
+#define REG_TEMP_OUT_H			0x06
+#define REG_STATUS_M			0x07
+#define REG_OUT_X_L_M			0x08
+#define REG_OUT_X_H_M			0x09
+#define REG_OUT_Y_L_M			0x0A
+#define REG_OUT_Y_H_M			0x0B
+#define REG_OUT_Z_L_M			0x0C
+#define REG_OUT_Z_H_M			0x0D
+#define REG_WHO_AM_I			0x0F
+#define REG_INT_CTRL_M			0x12
+#define REG_CTRL0				0x1F
+#define REG_CTRL1				0x20
+#define REG_CTRL2				0x21
+#define REG_CTRL3				0x22
+#define REG_CTRL4				0x23
+#define REG_CTRL5				0x24
+#define REG_CTRL6				0x25
+#define REG_CTRL7				0x26
+#define REG_STATUS_A			0x27
+#define REG_OUT_X_L_A			0x28
+#define REG_OUT_X_H_A			0x29
+#define REG_OUT_Y_L_A			0x2A
+#define REG_OUT_Y_H_A			0x2B
+#define REG_OUT_Z_L_A			0x2C
+#define REG_OUT_Z_H_A			0x2D
+#define REG_FIFO_CTRL			0x2E
+#define REG_FIFO_SRC			0x2F
+#define REG_IG_CFG1				0x30
 
 enum LMS303_MAG_SCALE {
 	SCALE_MAG_2gauss	= 0,
@@ -78,19 +109,19 @@ enum LMS303_ACCEL_FIFO_MODE {
 class LMS303 {
 
 private:
-	int celsius;
+	float celsius;
 
 	int I2CBus, I2CAddress;
 	char dataBuffer[LMS303_I2C_BUFFER];
 	char accelFIFO[ACCEL_FIFO_SIZE];	// 16 FIFO slots * 6 Accel output registers
 	LMS303_ACCEL_FIFO_MODE accelFIFOMode = ACCEL_FIFO_BYPASS;
 
-	int magFullScale;
+	double magScale;
 	float magX;
 	float magY;
 	float magZ;
 
-	int accelFullScale;
+	double accelScale;
 	float accelX;	// in g's
 	float accelY;	// in g's
 	float accelZ;	// in g's

@@ -14,37 +14,6 @@
 
 using namespace std;
 
-
-#define MAX_BUS						64
-
-#define REG_WHO_AM_I				0x0F
-#define REG_CTRL1					0x20
-#define REG_CTRL2					0x21
-#define REG_CTRL3					0x22
-#define REG_CTRL4					0x23
-#define REG_CTRL5					0x24
-#define REG_REFERENCE				0x25
-#define REG_OUT_TEMP				0x26
-#define REG_STATUS					0x27
-#define REG_OUT_X_L					0x28
-#define REG_OUT_X_H					0x29
-#define REG_OUT_Y_L					0x2A
-#define REG_OUT_Y_H					0x2B
-#define REG_OUT_Z_L					0x2C
-#define REG_OUT_Z_H					0x2D
-#define REG_FIFO_CTRL				0x2E
-#define REG_FIFO_SRC				0x2F
-#define REG_IG_CFG					0x30
-#define REG_IG_SRC					0x31
-#define REG_IG_THS_XH				0x32
-#define REG_IG_THS_XL				0x33
-#define REG_IG_THS_YH				0x34
-#define REG_IG_THS_YL				0x35
-#define REG_IG_THS_ZH				0x36
-#define REG_IG_THS_ZL				0x37
-#define REG_IG_DURATION				0x38
-#define REG_LOW_ODR					0x39
-
 L3GD20Gyro::L3GD20Gyro(int bus, int address) {
 	I2CBus = bus;
 	I2CAddress = address;
@@ -69,7 +38,7 @@ int L3GD20Gyro::reset() {
 	// Clear memory
 	memset(dataBuffer, 0, L3GD20_I2C_BUFFER);
 	memset(gyroFIFO, 0, GYRO_FIFO_SIZE);
-	gyroFullScale = 0;
+	gyroScale = 0;
 
 	gyroFIFOMode = GYRO_FIFO_BYPASS;
 
@@ -83,8 +52,8 @@ int L3GD20Gyro::reset() {
 }
 
 int L3GD20Gyro::enableGyro() {
-	setGyroDataRate(DR_GYRO_100HZ);	// Set dataRate to enable device.
-	setGyroScale(SCALE_GYRO_500dps);	// Set accelerometer SCALE
+	setGyroDataRate(DR_GYRO_800HZ);	// Set dataRate to enable device.
+	setGyroScale(SCALE_GYRO_2000dps);	// Set accelerometer SCALE
 	setGyroFIFOMode(GYRO_FIFO_STREAM);	// Enable FIFO for easy output averaging
 
 	char buf[1] = {0x00};
@@ -205,26 +174,26 @@ int L3GD20Gyro::setGyroScale(L3GD20_GYRO_SCALE scale) {
 	buf[0] |= (char)scale << 4;	// Set new scale bits
 	if(writeI2CDeviceByte(REG_CTRL4, buf[0])) {	// Set accelerometer SCALE
 		cout << "Failed to set accelerometer scale!" << endl;
-		gyroFullScale = 0;
+		gyroScale = 0;
 		return 1;
 	}
 
 	switch(scale){
 	case SCALE_GYRO_245dps: {
-		gyroFullScale = 245;
+		gyroScale = .00875;
 		break;
 	}
 	case SCALE_GYRO_500dps: {
-		gyroFullScale = 500;
+		gyroScale = .0175;
 		break;
 	}
 	case SCALE_GYRO_2000dps: {
-		gyroFullScale = 2000;
+		gyroScale = .07;
 		break;
 	}
 	default: {
-		gyroFullScale = 0;
-		cout << "Failed to set gyro scale!" << endl;
+		gyroScale = 0;
+		cout << "Error! Invalid gyroscope scale." << endl;
 		return 1;
 		break;
 	}
@@ -273,11 +242,11 @@ int L3GD20Gyro::setGyroFIFOMode(L3GD20_GYRO_FIFO_MODE mode) {
 float L3GD20Gyro::convertGyroOutput(int msb_reg_addr, int lsb_reg_addr){
 	short temp = dataBuffer[msb_reg_addr];
 	temp = (temp<<8) | dataBuffer[lsb_reg_addr];
-	return ((float)temp * (float)gyroFullScale) / (float)0x8000;	// Convert to dps
+	return ((float)temp * gyroScale);	// Convert to dps
 }
 
 float L3GD20Gyro::convertGyroOutput(int rate) {
-	return ((float)rate * (float)gyroFullScale) / (float)0x8000;	// Convert to g's
+	return ((float)rate * gyroScale);	// Convert to g's
 }
 
 int L3GD20Gyro::readGyroFIFO(char buffer[]) {

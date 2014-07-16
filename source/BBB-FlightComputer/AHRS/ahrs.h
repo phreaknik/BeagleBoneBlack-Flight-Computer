@@ -1,8 +1,10 @@
 #ifndef UIMU_AHRS_H
 #define UIMU_AHRS_H
 
+#include "../BBB-FlightComputer.h"
 #include "imumaths.h"
 #include <time.h>
+#include <iostream>
 
 //initialises the AHRS
 void uimu_ahrs_init(imu::Vector<3> acc, imu::Vector<3> mag);
