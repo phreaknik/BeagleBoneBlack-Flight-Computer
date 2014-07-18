@@ -10,9 +10,9 @@
 #include <fstream>
 #include <string>
 #include <unistd.h>
-#include "hardware/LMS303.h"
-#include "hardware/LPS331Altimeter.h"
-#include "hardware/L3GD20Gyro.h"
+#include "BBB-FlightComputer/hardware/LMS303.h"
+#include "BBB-FlightComputer/hardware/LPS331Altimeter.h"
+#include "BBB-FlightComputer/hardware/L3GD20Gyro.h"
 
 using namespace std;
 
@@ -56,11 +56,4 @@ int main(int argc, char* argv[]) {
 	}
 
 	return 0;
-}
-
-unsigned long micros() {
-	timespec timeStamp;
-	clock_gettime(CLOCK_MONOTONIC, &timeStamp);
-
-	return timeStamp.tv_nsec / 1000000;
 }
