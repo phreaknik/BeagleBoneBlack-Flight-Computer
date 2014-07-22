@@ -9,6 +9,7 @@ RM := rm -rf
 # All of the sources participating in the build are defined here
 -include sources.mk
 -include source/BBB-FlightComputer/hardware/subdir.mk
+-include source/BBB-FlightComputer/flight\ control/subdir.mk
 -include source/BBB-FlightComputer/AHRS/subdir.mk
 -include source/BBB-FlightComputer/subdir.mk
 -include source/subdir.mk

@@ -4,6 +4,7 @@
 // Version     :
 // Copyright   : is for chumps. This work is free for you to copy.
 // Description : Main function for Beaglebone Black flight computer.
+// Resources   : PRU - https://github.com/beagleboard/am335x_pru_package
 //============================================================================
 
 #include "BBB-FlightComputer/BBB-FlightComputer.h"
@@ -13,7 +14,7 @@ unsigned long delta_t;
 using namespace std;
 
 int main(int argc, char* argv[]) {
-
+	/* Experimental Quaternion based AHRS
 	LMS303 lms303(1, 0x1d);
 	LPS331Altimeter alt(1, 0x5d);
 	L3GD20Gyro gyro(1, 0x6b);
@@ -24,12 +25,14 @@ int main(int argc, char* argv[]) {
 	uimu_ahrs_init(acc, mag);
 	uimu_ahrs_set_beta(0.1);
 
+
 	while(1) {
 		// execute at ~50Hz
-		unsigned long time = micros();
-		if((time - delta_t) < 20000) continue; // Wont let execution pass this line until 20ms has passed
+		usleep(200000);	// Actually seems to delay nanoseconds
+		//unsigned long time = micros();
+		//if((time - delta_t) < 20000) continue; // Wont let execution pass this line until 20ms has passed
 		//cout << "Delta T: " << time - delta_t << endl;
-		delta_t = time;
+		//delta_t = time;
 
 		lms303.readFullSensorState();
 		gyro.readFullSensorState();
@@ -39,7 +42,8 @@ int main(int argc, char* argv[]) {
 		imu::Vector<3> euler = uimu_ahrs_get_euler();
 		cout<< "euler: " << euler.x() << " " << euler.y() << " " << euler.z() << "\n";
 	}
-	/* Hardware test
+	*/
+
 	LMS303 lms303(1, 0x1d);
 	LPS331Altimeter lps331(1, 0x5d);
 	L3GD20Gyro l3gd20(1, 0x6b);
@@ -50,6 +54,7 @@ int main(int argc, char* argv[]) {
 		l3gd20.readFullSensorState();
 
 		cout << "##################################\n";
+		/*
 		cout << "Magnetism X:\t" << lms303.getMagX() << " gauss" << endl;
 		cout << "Magnetism Y:\t" << lms303.getMagY() << " gauss" << endl;
 		cout << "Magnetism Z:\t" << lms303.getMagZ() << " gauss" << endl << endl;
@@ -57,10 +62,12 @@ int main(int argc, char* argv[]) {
 		cout << "Accel X:\t" << lms303.getAccelX() << " g" << endl;
 		cout << "Accel Y:\t" << lms303.getAccelY() << " g" << endl;
 		cout << "Accel Z:\t" << lms303.getAccelZ() << " g" << endl << endl;
+		*/
 
 		cout << "Pitch:\t" << lms303.getPitch() << "\u00b0" << endl;
 		cout << "Roll:\t" << lms303.getRoll() << "\u00b0" << endl << endl;
 
+		/*
 		cout << "Core temperature:\t" << lms303.getTemperature() << "\u00b0C" << endl << endl;
 
 		cout << "Pressure:\t" << lps331.getPressure() << " mBar" << endl;
@@ -69,10 +76,10 @@ int main(int argc, char* argv[]) {
 		cout << "Roll X:\t" << l3gd20.getGyroX() << " \u00b0/s" << endl;
 		cout << "Roll Y:\t" << l3gd20.getGyroY() << " \u00b0/s" << endl;
 		cout << "Roll Z:\t" << l3gd20.getGyroZ() << " \u00b0/s" << endl;
+		 */
+		usleep(500000);
 
-		sleep(1);
-
-	}*/ // \Hardware test
+	} // \Hardware test
 
 	return 0;
 }

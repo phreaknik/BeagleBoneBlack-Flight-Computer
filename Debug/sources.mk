@@ -42,6 +42,7 @@ C_UPPER_DEPS :=
 SUBDIRS := \
 source \
 source/BBB-FlightComputer/hardware \
+source/BBB-FlightComputer/flight\ control \
 source/BBB-FlightComputer \
 source/BBB-FlightComputer/AHRS \
 
