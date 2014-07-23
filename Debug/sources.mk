@@ -41,8 +41,8 @@ C_UPPER_DEPS :=
 # Every subdirectory with source files must be described here
 SUBDIRS := \
 source \
-source/BBB-FlightComputer/hardware \
-source/BBB-FlightComputer/flight\ control \
+source/BBB-FlightComputer/sensors \
+source/BBB-FlightComputer/flightControl \
 source/BBB-FlightComputer \
 source/BBB-FlightComputer/AHRS \
 

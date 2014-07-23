@@ -114,7 +114,7 @@ private:
 	int I2CBus, I2CAddress;
 	char dataBuffer[LMS303_I2C_BUFFER];
 	char accelFIFO[ACCEL_FIFO_SIZE];	// 16 FIFO slots * 6 Accel output registers
-	LMS303_ACCEL_FIFO_MODE accelFIFOMode = ACCEL_FIFO_BYPASS;
+	LMS303_ACCEL_FIFO_MODE accelFIFOMode;
 
 	double magScale;
 	float magX;

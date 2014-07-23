@@ -14,10 +14,11 @@
 #include <fstream>
 #include <string>
 #include <unistd.h>
-#include "hardware/LMS303.h"
-#include "hardware/LPS331Altimeter.h"
-#include "hardware/L3GD20Gyro.h"
+#include "sensors/LMS303.h"
+#include "sensors/LPS331Altimeter.h"
+#include "sensors/L3GD20Gyro.h"
 #include "AHRS/ahrs.h"
+#include "flightControl/aircraftControls.h"
 #include <time.h>
 
 unsigned long micros();

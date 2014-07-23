@@ -2,7 +2,7 @@
 // Name        : main.cpp
 // Author      : John Boyd
 // Version     :
-// Copyright   : is for chumps. This work is free for you to copy.
+// Copyright   : This work is free for you to copy.
 // Description : Main function for Beaglebone Black flight computer.
 // Resources   : PRU - https://github.com/beagleboard/am335x_pru_package
 //============================================================================
@@ -44,9 +44,15 @@ int main(int argc, char* argv[]) {
 	}
 	*/
 
+	cout << "GO" << endl;
+	// Sensors
 	LMS303 lms303(1, 0x1d);
 	LPS331Altimeter lps331(1, 0x5d);
 	L3GD20Gyro l3gd20(1, 0x6b);
+
+	// Aircraft
+	aircraftControls aircraft(FLAP_MIX_ELEVON);
+	aircraft.init();
 
 	while(1) {
 		lms303.readFullSensorState();

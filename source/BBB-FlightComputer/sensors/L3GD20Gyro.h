@@ -85,7 +85,7 @@ private:
 	int I2CBus, I2CAddress;
 	char dataBuffer[L3GD20_I2C_BUFFER];
 	char gyroFIFO[GYRO_FIFO_SIZE];
-	L3GD20_GYRO_FIFO_MODE gyroFIFOMode = GYRO_FIFO_BYPASS;
+	L3GD20_GYRO_FIFO_MODE gyroFIFOMode;
 
 	float gyroScale;
 	float gyroX;
