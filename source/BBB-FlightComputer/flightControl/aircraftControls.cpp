@@ -43,10 +43,112 @@ PWMChannel::PWMChannel(int header, int pin) {	// Identifies the correct file pat
 	memset(runPath, 0, sizeof(runPath));	// clear path array first
 	memcpy(runPath, temp1.c_str(), temp1.size());
 	//cout << "runPath: " << runPath << endl;
+
+	period = 0;
+	duty = 0;
+	polarity = 0;
+
+	setPeriod(20000000);
+	setDuty(10000000);
+	setPolarity(1);
 }
 
 PWMChannel::PWMChannel() {	// Identifies the correct file path to communicate with PWM via sysfs
 	memset(basePath, 0, sizeof(basePath));	// clear path array
+	period = 0;
+	duty = 0;
+	polarity = 0;
+}
+
+int PWMChannel::setPeriod(unsigned long p) {
+	int fd, len;
+	char buf[MAX_BUF] = { 0 };	// Data to write
+	fd = open(periodPath, O_WRONLY);
+	if (fd < 0) {
+		cout << "Failed to set channel PWM period!" << endl;
+		close(fd);
+		return 1;
+	}
+
+	len = snprintf(buf, sizeof(buf), "%lu", p);
+	write(fd, buf, len);
+	close(fd);
+
+	period = p;
+
+	return 0;
+}
+
+int PWMChannel::setDuty(unsigned long d) {
+	int fd, len;
+	char buf[MAX_BUF] = { 0 };	// Data to write
+	fd = open(dutyPath, O_WRONLY);
+	if (fd < 0) {
+		cout << "Failed to set channel PWM duty!" << endl;
+		close(fd);
+		return 1;
+	}
+
+	len = snprintf(buf, sizeof(buf), "%lu", d);
+	write(fd, buf, len);
+	close(fd);
+
+	duty = d;
+
+	return 0;
+}
+
+int PWMChannel::setPolarity(unsigned long p) {
+	int fd, len;
+	char buf[MAX_BUF] = { 0 };	// Data to write
+	fd = open(polarityPath, O_WRONLY);
+	if (fd < 0) {
+		cout << "Failed to set channel PWM polarity!" << endl;
+		close(fd);
+		return 1;
+	}
+
+	len = snprintf(buf, sizeof(buf), "%lu", p);
+	write(fd, buf, len);
+	close(fd);
+
+	polarity = p;
+
+	return 0;
+}
+
+int PWMChannel::enable() {
+	int fd, len;
+	char buf[MAX_BUF] = { 0 };	// Data to write
+	fd = open(runPath, O_WRONLY);
+	if (fd < 0) {
+		cout << "Failed to enable channel PWM!" << endl;
+		close(fd);
+		return 1;
+	}
+
+	len = snprintf(buf, sizeof(buf), "%lu", 1);
+	write(fd, buf, len);
+	close(fd);
+
+	return 0;
+}
+
+int PWMChannel::disable() {
+	int fd, len;
+	char buf[MAX_BUF] = { 0 };	// Data to write
+	fd = open(runPath, O_WRONLY);
+	if (fd < 0) {
+		cout << "Failed to disable channel PWM!" << endl;
+		close(fd);
+		return 1;
+	}
+
+	len = snprintf(buf, sizeof(buf), "%lu", 0);
+	write(fd, buf, len);
+	close(fd);
+
+	return 0;
 }
 
 std::string PWMChannel::GetFullNameOfFileInDirectory(const std::string & dirName, const std::string & fileNameToFind)
@@ -80,49 +182,15 @@ aircraftControls::aircraftControls(FLAP_MIX_MODE mix) {
 	roll = 0;	// In +/- percentage
 	yaw = 0;	// In +/- percentage
 	fullDeflection = FLAP_DEFLECTION_ANGLE;		// degrees
+	throttleTrim = 0;
+	pitchTrim = 0;
+	rollTrim = 0;
+	yawTrim = 0;
 	mixMode = mix;
 
 	setFlapMode(mix);
 }
-
 /*
-int aircraftControls::exportPWM() {
-	int fd, len;
-	char buf[MAX_BUF] = { 0 };
-	struct stat st; //check if already exported...just checking one pwm
-
-	fd = open("/sys/class/pwm/export", O_WRONLY);
-	if(fd < 0) cout << "Failed to export PWMs!" << endl;
-
-	if(stat("/sys/class/pwm/pwm0",&st)==0) cout << "PWM0 already exported";
-	else {
-		len = snprintf(buf, sizeof(buf), "%d", 0);
-		write(fd, buf, len);
-	}
-
-	close(fd);
-	return 0;
-}
-
-int aircraftControls::unexportPWM() {
-	int fd, len;
-	char buf[MAX_BUF] = { 0 };
-	struct stat st; //check if already exported...just checking one pwm
-
-	fd = open("/sys/class/pwm/unexport", O_WRONLY);
-	if(fd < 0) cout << "Failed to unexport PWMs!" << endl;
-
-	if(stat("/sys/class/pwm/pwm0",&st)==0) cout << "PWM0 already unexported";
-	else {
-		len = snprintf(buf, sizeof(buf), "%d", 0);
-		write(fd, buf, len);
-	}
-
-	close(fd);
-	return 0;
-}
-*/
-
 int aircraftControls::setPWMDuty(PWMChannel channel, unsigned long duty) {
 	int fd, len;
 	char buf[MAX_BUF] = { 0 };	// Data to write
@@ -207,7 +275,7 @@ int aircraftControls::setPWMPolarity(PWMChannel channel, int polarity) {
 
 	return 0;
 }
-
+*/
 int aircraftControls::init() {
 	throttleChannel = PWMChannel(THROTTLE_HEADER, THROTTLE_PIN);
 	elevatorChannel = PWMChannel(ELEVATOR_HEADER, ELEVATOR_PIN);
@@ -216,93 +284,80 @@ int aircraftControls::init() {
 	rightAileronChannel = PWMChannel(RIGHT_AILE_HEADER, RIGHT_AILE_PIN);
 	rudderChannel = PWMChannel(RUDDER_HEADER, RUDDER_PIN);
 
-	setPWMPeriod(throttleChannel, 20000000);	// 50Hz PWM frequency
-	setPWMDuty(throttleChannel, 10000000);	// set 50% duty cycle
-	setPWMPolarity(throttleChannel, 1);
-	startPWM(throttleChannel);	// Enable PWM output
+	throttleChannel.setPeriod(20000000);	// 50Hz PWM frequency
+	throttleChannel.setDuty(10000000);	// set 50% duty cycle
+	throttleChannel.setPolarity(1);
+	throttleChannel.enable();	// Enable PWM output
 
-	setPWMPeriod(elevatorChannel, 20000000);	// 50Hz PWM frequency
-	setPWMDuty(elevatorChannel, 10000000);	// set 50% duty cycle
-	setPWMPolarity(elevatorChannel, 1);
-	startPWM(elevatorChannel);	// Enable PWM output
+	elevatorChannel.setPeriod(20000000);	// 50Hz PWM frequency
+	elevatorChannel.setDuty(10000000);	// set 50% duty cycle
+	elevatorChannel.setPolarity(1);
+	elevatorChannel.enable();	// Enable PWM output
 
-	setPWMPeriod(aileronChannel, 20000000);	// 50Hz PWM frequency
-	setPWMDuty(aileronChannel, 10000000);	// set 50% duty cycle
-	setPWMPolarity(aileronChannel, 1);
-	startPWM(aileronChannel);	// Enable PWM output
+	aileronChannel.setPeriod(20000000);	// 50Hz PWM frequency
+	aileronChannel.setDuty(10000000);	// set 50% duty cycle
+	aileronChannel.setPolarity(1);
+	aileronChannel.enable();	// Enable PWM output
 
-	setPWMPeriod(leftAileronChannel, 20000000);	// 50Hz PWM frequency
-	setPWMDuty(leftAileronChannel, 10000000);	// set 50% duty cycle
-	setPWMPolarity(leftAileronChannel, 1);
-	startPWM(leftAileronChannel);	// Enable PWM output
+	leftAileronChannel.setPeriod(20000000);	// 50Hz PWM frequency
+	leftAileronChannel.setDuty(10000000);	// set 50% duty cycle
+	leftAileronChannel.setPolarity(1);
+	leftAileronChannel.enable();	// Enable PWM output
 
-	setPWMPeriod(rightAileronChannel, 20000000);	// 50Hz PWM frequency
-	setPWMDuty(rightAileronChannel, 10000000);	// set 50% duty cycle
-	setPWMPolarity(rightAileronChannel, 1);
-	startPWM(rightAileronChannel);	// Enable PWM output
+	rightAileronChannel.setPeriod(20000000);	// 50Hz PWM frequency
+	rightAileronChannel.setDuty(10000000);	// set 50% duty cycle
+	rightAileronChannel.setPolarity(1);
+	rightAileronChannel.enable();	// Enable PWM output
 
-	setPWMPeriod(rudderChannel, 20000000);	// 50Hz PWM frequency
-	setPWMDuty(rudderChannel, 10000000);	// set 50% duty cycle
-	setPWMPolarity(rudderChannel, 1);
-	startPWM(rudderChannel);	// Enable PWM output
+	rudderChannel.setPeriod(20000000);	// 50Hz PWM frequency
+	rudderChannel.setDuty(10000000);	// set 50% duty cycle
+	rudderChannel.setPolarity(1);
+	rudderChannel.enable();	// Enable PWM output
 
 	return 0;
 }
 
 int aircraftControls::reset() {
-	stopPWM(throttleChannel);	// Disable PWM output
-	stopPWM(elevatorChannel);	// Disable PWM output
-	stopPWM(aileronChannel);	// Disable PWM output
-	stopPWM(leftAileronChannel);	// Disable PWM output
-	stopPWM(rightAileronChannel);	// Disable PWM output
-	stopPWM(rudderChannel);	// Disable PWM output
+	throttleChannel.disable();	// Disable PWM output
+	elevatorChannel.disable();	// Disable PWM output
+	aileronChannel.disable();	// Disable PWM output
+	leftAileronChannel.disable();	// Disable PWM output
+	rightAileronChannel.disable();	// Disable PWM output
+	rudderChannel.disable();	// Disable PWM output
+	throttleTrim = 0;
+	pitchTrim = 0;
+	rollTrim = 0;
+	yawTrim = 0;
 
-	setPWMPeriod(throttleChannel, 20000000);	// 50Hz PWM frequency
-	setPWMDuty(throttleChannel, 10000000);	// set 50% duty cycle
-	setPWMPolarity(throttleChannel, 1);
-	startPWM(throttleChannel);	// Enable PWM output
-
-	setPWMPeriod(elevatorChannel, 20000000);	// 50Hz PWM frequency
-	setPWMDuty(elevatorChannel, 10000000);	// set 50% duty cycle
-	setPWMPolarity(elevatorChannel, 1);
-	startPWM(elevatorChannel);	// Enable PWM output
-
-	setPWMPeriod(aileronChannel, 20000000);	// 50Hz PWM frequency
-	setPWMDuty(aileronChannel, 10000000);	// set 50% duty cycle
-	setPWMPolarity(aileronChannel, 1);
-	startPWM(aileronChannel);	// Enable PWM output
-
-	setPWMPeriod(leftAileronChannel, 20000000);	// 50Hz PWM frequency
-	setPWMDuty(leftAileronChannel, 10000000);	// set 50% duty cycle
-	setPWMPolarity(leftAileronChannel, 1);
-	startPWM(leftAileronChannel);	// Enable PWM output
-
-	setPWMPeriod(rightAileronChannel, 20000000);	// 50Hz PWM frequency
-	setPWMDuty(rightAileronChannel, 10000000);	// set 50% duty cycle
-	setPWMPolarity(rightAileronChannel, 1);
-	startPWM(rightAileronChannel);	// Enable PWM output
-
-	setPWMPeriod(rudderChannel, 20000000);	// 50Hz PWM frequency
-	setPWMDuty(rudderChannel, 10000000);	// set 50% duty cycle
-	setPWMPolarity(rudderChannel, 1);
-	startPWM(rudderChannel);	// Enable PWM output
+	init();
 
 	return 0;
 }
 
-int aircraftControls::setFlapMode(FLAP_MIX_MODE mixMode) {
+int aircraftControls::setFlapMode(FLAP_MIX_MODE mix) {
+	mixMode = mix;
 	return 0;
 }
 
-int aircraftControls::setThrottle() {
+int aircraftControls::setThrottle(int percent) {
+	percent = (percent + 100) / 2;
+	percent += throttleTrim;
+	throttleChannel.setDuty((float)throttleChannel.getPeriod() * (float)percent / 100);
 	return 0;
 }
 
-int aircraftControls::setPitch() {
+int aircraftControls::setPitch(int percent) {
 	return 0;
 }
 
-int aircraftControls::setRoll() {
+int aircraftControls::setRoll(int percent) {
+	return 0;
+}
+
+int aircraftControls::setYaw(int percent) {
+	percent = (percent + 100) / 2;
+	percent += yawTrim;
+	rudderChannel.setDuty((float)rudderChannel.getPeriod() * (float)percent / 100);
 	return 0;
 }
 

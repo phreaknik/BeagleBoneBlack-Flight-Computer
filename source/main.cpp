@@ -55,9 +55,13 @@ int main(int argc, char* argv[]) {
 
 	while(1) {
 		usleep(1000000);
-		aircraft.setPWMDuty(aircraft.throttleChannel, 5000000);
+		aircraft.setThrottle(75);
 		usleep(1000000);
-		aircraft.setPWMDuty(aircraft.throttleChannel, 15000000);
+		aircraft.setThrottle(25);
+		usleep(1000000);
+		aircraft.setThrottle(100);
+		usleep(1000000);
+		aircraft.setThrottle(0);
 	}
 
 	/*

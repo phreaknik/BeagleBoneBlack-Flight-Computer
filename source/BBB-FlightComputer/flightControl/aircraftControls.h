@@ -64,6 +64,10 @@ private:
 	char polarityPath[FILE_PATH_LENGTH];
 	char runPath[FILE_PATH_LENGTH];
 
+	unsigned long period;
+	unsigned long duty;
+	unsigned long polarity;
+
 	std::string GetFullNameOfFileInDirectory(const std::string & dirName, const std::string & fileNameToFind);
 
 public:
@@ -73,16 +77,30 @@ public:
 	char* getDutyPath() { return dutyPath; }
 	char* getPolarityPath() { return polarityPath; }
 	char* getRunPath() { return runPath; }
+
+	unsigned long getPeriod() { return period; }
+	int setPeriod(unsigned long p);
+	unsigned long getDuty() { return duty; }
+	int setDuty(unsigned long d);
+	unsigned long getPolarity() { return polarity; }
+	int setPolarity(unsigned long p);
+	int enable();
+	int disable();
+
 	virtual ~PWMChannel();
 };
 
 class aircraftControls {
-public:	// ****** Make private once done with DEBUG
+private:
 	int throttle;	// In + percentage
 	int pitch;	// In +/- percentage
 	int roll;	// In +/- percentage
 	int yaw;	// In +/- percentage
 	int fullDeflection;		// degrees
+	int throttleTrim;
+	int pitchTrim;
+	int rollTrim;
+	int yawTrim;
 	FLAP_MIX_MODE mixMode;
 
 	PWMChannel throttleChannel;
@@ -92,29 +110,28 @@ public:	// ****** Make private once done with DEBUG
 	PWMChannel rightAileronChannel;
 	PWMChannel rudderChannel;
 
-	//int exportPWM();
-	//int unexportPWM();
-
+	/*
 	int setPWMDuty(PWMChannel channel, unsigned long duty);
 	int setPWMPeriod(PWMChannel channel, unsigned long period);
 	int startPWM(PWMChannel channel);
 	int stopPWM(PWMChannel channel);
 	int setPWMPolarity(PWMChannel channel, int polarity);
-
+	*/
 public:
-	aircraftControls(FLAP_MIX_MODE mixMode);
+	aircraftControls(FLAP_MIX_MODE mix);
 	int init();
 	int reset();
 
-	int setFlapMode(FLAP_MIX_MODE mixMode);
+	int setFlapMode(FLAP_MIX_MODE mix);
 
 	int getThrottle() { return throttle; }
 	int getYaw() { return yaw; }
 	int getPitch() { return pitch; }
 	int getRoll() { return roll; }
-	int setThrottle();
-	int setPitch();
-	int setRoll();
+	int setThrottle(int percent);
+	int setPitch(int percent);
+	int setRoll(int percent);
+	int setYaw(int percent);
 
 	virtual ~aircraftControls();
 };
