@@ -44,7 +44,6 @@ int main(int argc, char* argv[]) {
 	}
 	*/
 
-	cout << "GO" << endl;
 	// Sensors
 	LMS303 lms303(1, 0x1d);
 	LPS331Altimeter lps331(1, 0x5d);
@@ -55,12 +54,20 @@ int main(int argc, char* argv[]) {
 	aircraft.init();
 
 	while(1) {
+		usleep(1000000);
+		aircraft.setPWMDuty(aircraft.throttleChannel, 5000000);
+		usleep(1000000);
+		aircraft.setPWMDuty(aircraft.throttleChannel, 15000000);
+	}
+
+	/*
+	while(1) {
 		lms303.readFullSensorState();
 		lps331.readFullSensorState();
 		l3gd20.readFullSensorState();
 
 		cout << "##################################\n";
-		/*
+
 		cout << "Magnetism X:\t" << lms303.getMagX() << " gauss" << endl;
 		cout << "Magnetism Y:\t" << lms303.getMagY() << " gauss" << endl;
 		cout << "Magnetism Z:\t" << lms303.getMagZ() << " gauss" << endl << endl;
@@ -68,12 +75,12 @@ int main(int argc, char* argv[]) {
 		cout << "Accel X:\t" << lms303.getAccelX() << " g" << endl;
 		cout << "Accel Y:\t" << lms303.getAccelY() << " g" << endl;
 		cout << "Accel Z:\t" << lms303.getAccelZ() << " g" << endl << endl;
-		*/
+
 
 		cout << "Pitch:\t" << lms303.getPitch() << "\u00b0" << endl;
 		cout << "Roll:\t" << lms303.getRoll() << "\u00b0" << endl << endl;
 
-		/*
+
 		cout << "Core temperature:\t" << lms303.getTemperature() << "\u00b0C" << endl << endl;
 
 		cout << "Pressure:\t" << lps331.getPressure() << " mBar" << endl;
@@ -82,10 +89,10 @@ int main(int argc, char* argv[]) {
 		cout << "Roll X:\t" << l3gd20.getGyroX() << " \u00b0/s" << endl;
 		cout << "Roll Y:\t" << l3gd20.getGyroY() << " \u00b0/s" << endl;
 		cout << "Roll Z:\t" << l3gd20.getGyroZ() << " \u00b0/s" << endl;
-		 */
+
 		usleep(500000);
 
 	} // \Hardware test
-
+	*/
 	return 0;
 }
