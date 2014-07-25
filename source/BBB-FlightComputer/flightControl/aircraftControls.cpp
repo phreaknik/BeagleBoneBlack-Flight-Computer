@@ -280,8 +280,8 @@ int aircraftControls::init() {
 	throttleChannel = PWMChannel(THROTTLE_HEADER, THROTTLE_PIN);
 	elevatorChannel = PWMChannel(ELEVATOR_HEADER, ELEVATOR_PIN);
 	aileronChannel = PWMChannel(AILERON_HEADER, AILERON_PIN);
-	leftAileronChannel = PWMChannel(LEFT_AILE_HEADER, LEFT_AILE_PIN);
-	rightAileronChannel = PWMChannel(RIGHT_AILE_HEADER, RIGHT_AILE_PIN);
+	leftElevonChannel = PWMChannel(LEFT_ELEVON_HEADER, LEFT_ELEVON_PIN);
+	rightElevonChannel = PWMChannel(RIGHT_ELEVON_HEADER, RIGHT_ELEVON_PIN);
 	rudderChannel = PWMChannel(RUDDER_HEADER, RUDDER_PIN);
 
 	throttleChannel.setPeriod(20000000);	// 50Hz PWM frequency
@@ -299,15 +299,15 @@ int aircraftControls::init() {
 	aileronChannel.setPolarity(1);
 	aileronChannel.enable();	// Enable PWM output
 
-	leftAileronChannel.setPeriod(20000000);	// 50Hz PWM frequency
-	leftAileronChannel.setDuty(10000000);	// set 50% duty cycle
-	leftAileronChannel.setPolarity(1);
-	leftAileronChannel.enable();	// Enable PWM output
+	leftElevonChannel.setPeriod(20000000);	// 50Hz PWM frequency
+	leftElevonChannel.setDuty(10000000);	// set 50% duty cycle
+	leftElevonChannel.setPolarity(1);
+	leftElevonChannel.enable();	// Enable PWM output
 
-	rightAileronChannel.setPeriod(20000000);	// 50Hz PWM frequency
-	rightAileronChannel.setDuty(10000000);	// set 50% duty cycle
-	rightAileronChannel.setPolarity(1);
-	rightAileronChannel.enable();	// Enable PWM output
+	rightElevonChannel.setPeriod(20000000);	// 50Hz PWM frequency
+	rightElevonChannel.setDuty(10000000);	// set 50% duty cycle
+	rightElevonChannel.setPolarity(1);
+	rightElevonChannel.enable();	// Enable PWM output
 
 	rudderChannel.setPeriod(20000000);	// 50Hz PWM frequency
 	rudderChannel.setDuty(10000000);	// set 50% duty cycle
@@ -321,8 +321,8 @@ int aircraftControls::reset() {
 	throttleChannel.disable();	// Disable PWM output
 	elevatorChannel.disable();	// Disable PWM output
 	aileronChannel.disable();	// Disable PWM output
-	leftAileronChannel.disable();	// Disable PWM output
-	rightAileronChannel.disable();	// Disable PWM output
+	leftElevonChannel.disable();	// Disable PWM output
+	rightElevonChannel.disable();	// Disable PWM output
 	rudderChannel.disable();	// Disable PWM output
 	throttleTrim = 0;
 	pitchTrim = 0;
@@ -342,22 +342,70 @@ int aircraftControls::setFlapMode(FLAP_MIX_MODE mix) {
 int aircraftControls::setThrottle(int percent) {
 	percent = (percent + 100) / 2;
 	percent += throttleTrim;
-	throttleChannel.setDuty((float)throttleChannel.getPeriod() * (float)percent / 100);
+	throttleChannel.setDuty((throttleChannel.getPeriod() * percent) / 100);
+	throttle = percent;
 	return 0;
 }
 
 int aircraftControls::setPitch(int percent) {
+	pitch = percent;
+
+	switch (mixMode) {
+	case FLAP_MIX_ACRO: {
+		percent = (percent + 100) / 2;
+		percent += pitchTrim;
+		elevatorChannel.setDuty((elevatorChannel.getPeriod() * percent) / 100);
+		break;
+	}
+	case FLAP_MIX_ELEVON: {
+		int tempPitch = (pitch + 100) / 2;
+		tempPitch += pitchTrim;
+		int tempRoll = (roll + 100) / 2;
+		tempRoll += rollTrim;
+
+		int left = (tempPitch / 2) + (tempRoll / 2);
+		int right = (tempPitch / 2) - (tempRoll / 2);
+
+		leftElevonChannel.setDuty((leftElevonChannel.getPeriod() * percent) / 100);
+		rightElevonChannel.setDuty((rightElevonChannel.getPeriod() * percent) / 100);
+		break;
+	}
+	}
 	return 0;
 }
 
 int aircraftControls::setRoll(int percent) {
+	roll = percent;
+
+	switch (mixMode) {
+	case FLAP_MIX_ACRO: {
+		percent = (percent + 100) / 2;
+		percent += rollTrim;
+		elevatorChannel.setDuty((elevatorChannel.getPeriod() * percent) / 100);
+		break;
+	}
+	case FLAP_MIX_ELEVON: {
+		int tempPitch = (pitch + 100) / 2;
+		tempPitch += pitchTrim;
+		int tempRoll = (roll + 100) / 2;
+		tempRoll += rollTrim;
+
+		int left = (tempPitch / 2) + (tempRoll / 2);
+		int right = (tempPitch / 2) - (tempRoll / 2);
+
+		leftElevonChannel.setDuty((leftElevonChannel.getPeriod() * percent) / 100);
+		rightElevonChannel.setDuty((rightElevonChannel.getPeriod() * percent) / 100);
+		break;
+	}
+	}
 	return 0;
 }
 
 int aircraftControls::setYaw(int percent) {
 	percent = (percent + 100) / 2;
 	percent += yawTrim;
-	rudderChannel.setDuty((float)rudderChannel.getPeriod() * (float)percent / 100);
+	rudderChannel.setDuty((rudderChannel.getPeriod() * percent) / 100);
+	yaw = percent;
 	return 0;
 }
 
