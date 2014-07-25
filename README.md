@@ -8,8 +8,8 @@ Documentation
 
 This project is compiled using the gnueabihf C++ cross compiler found in Texas Instruments' am335xSDK kit (Linux EZSDK: http://www.ti.com/tool/linuxezsdk-sitara).
 
-The sensors (AltIMU-10 & Ultimate GPS) must be connected to the appropriate BeagleBone Black pins that interface with the I2C bus defined in each sensor's constructor in "source/main.cpp" (Eg. LMS303
-lms303(1, 0x1d); // create sensor on I2C bus 1 with address 0x1d
+The sensors (AltIMU-10 & Ultimate GPS) must be connected to the appropriate BeagleBone Black pins that interface with the I2C bus defined in each sensor's constructor in "source/main.cpp" 
+( Eg: LMS303 lms303(1, 0x1d); // create sensor on I2C bus 1 with address 0x1d )
 
 Aircraft servos and ESCs must be connected to the appropriate BeagleBone Black pins as defined in "source/BBB-FlightComputer/flightControls/aircraftControls.h"
 
