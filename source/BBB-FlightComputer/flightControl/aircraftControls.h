@@ -34,10 +34,10 @@
 #define ELEVATOR_PIN		21
 #define AILERON_HEADER		9
 #define AILERON_PIN			21
-#define LEFT_AILE_HEADER	9
-#define LEFT_AILE_PIN		21
-#define RIGHT_AILE_HEADER	9
-#define RIGHT_AILE_PIN		21
+#define LEFT_ELEVON_HEADER	9
+#define LEFT_ELEVON_PIN		21
+#define RIGHT_ELEVON_HEADER	9
+#define RIGHT_ELEVON_PIN	21
 #define RUDDER_HEADER		9
 #define RUDDER_PIN			21
 
@@ -108,8 +108,8 @@ public:	// MAKE THIS PRIVATE ***************************************************
 	PWMChannel throttleChannel;
 	PWMChannel elevatorChannel;
 	PWMChannel aileronChannel;
-	PWMChannel leftAileronChannel;
-	PWMChannel rightAileronChannel;
+	PWMChannel leftElevonChannel;
+	PWMChannel rightElevonChannel;
 	PWMChannel rudderChannel;
 
 public:
