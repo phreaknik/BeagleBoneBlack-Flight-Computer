@@ -54,14 +54,20 @@ int main(int argc, char* argv[]) {
 	aircraft.init();
 
 	while(1) {
-		usleep(1000000);
-		aircraft.setThrottle(75);
-		usleep(1000000);
-		aircraft.setThrottle(25);
-		usleep(1000000);
-		aircraft.setThrottle(100);
-		usleep(1000000);
+		aircraft.setThrottle(-100);
+		usleep(2000000);
+
+		aircraft.setThrottle(-50);
+		usleep(2000000);
+
 		aircraft.setThrottle(0);
+		usleep(2000000);
+
+		aircraft.setThrottle(50);
+		usleep(2000000);
+
+		aircraft.setThrottle(100);
+		usleep(2000000);
 	}
 
 	/*

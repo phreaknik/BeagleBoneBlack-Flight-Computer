@@ -1,5 +1,5 @@
 /*
- * controlSurfaces.cpp
+ * aircraftControls.cpp
  *
  *  Created on: Jul 21, 2014
  *      Author: phreaknux
@@ -13,8 +13,129 @@
 
 using namespace std;
 
+int PWMChannel::loadDeviceTree(int header, int pin) {
+	int fd, len;
+	char buf[MAX_BUF] = { 0 };
+
+	std::string slotPath = "/sys/devices/";
+	slotPath = slotPath + GetFullNameOfFileInDirectory(slotPath, "bone_capemgr.");
+	slotPath = slotPath + "/slots";
+
+	// Load global PWM device tree overlay
+	int slot = getCapeManagerSlot(header, pin, "am33xx_pwm");
+
+	if(slot == -1) {
+		fd = open(slotPath.c_str(), O_WRONLY);
+		if (fd < 0) {
+			cout << "Failed to load am33xx_pwm device tree overly!" << endl;
+			close(fd);
+			return -1;
+		}
+		write(fd, "am33xx_pwm", 10);	// Load global PWM device tree overly
+		close(fd);
+
+		// Check of overlay loaded successfully
+		slot = getCapeManagerSlot(header, pin, "am33xx_pwm");
+
+		if(slot != -1) {
+			cout << "Device tree overlay am33xx_pwm successfully loaded to slot: " << slot << endl;
+		}
+		else {
+			cout << "Device tree overlay am33xx_pwm failed to load!" << endl;
+			return -1;
+		}
+	}
+	else {
+		cout << "Device tree overlay am33xx_pwm already loaded." << endl;
+	}
+
+
+	// Load pin specific PWM device tree overlay
+	len = snprintf(buf, sizeof(buf), "bone_pwm_P%lu_%lu", header, pin);
+	slot = getCapeManagerSlot(header, pin, buf);
+
+	if(slot == -1) {
+		fd = open(slotPath.c_str(), O_WRONLY);
+		if (fd < 0) {
+			cout << "Failed to load " << buf << " device tree overly!" << endl;
+			close(fd);
+			return -1;
+		}
+
+		write(fd, buf, len);	// Load global PWM device tree overly
+		close(fd);
+
+		// Check of overlay loaded successfully
+		slot = getCapeManagerSlot(header, pin, buf);
+
+		if(slot != -1) {
+			cout << "Device tree overlay " << buf << " successfully loaded to slot: " << slot << endl;
+		}
+		else {
+			cout << "Device tree overlay " << buf << " failed to load!" << endl;
+			return -1;
+		}
+	}
+	else {
+		cout << "Device tree overlay " << buf << " already loaded." << endl;
+	}
+
+	usleep(500000);	// Give system time to load device tree
+	return 0;
+}
+
+int PWMChannel::getCapeManagerSlot(int header, int pin, char* name) {
+	//cout << " Getting slot!" << endl;
+	std::string slotPath = "/sys/devices/";
+	slotPath = slotPath + GetFullNameOfFileInDirectory(slotPath, "bone_capemgr.");
+	slotPath = slotPath + "/slots";
+
+	ifstream in(slotPath.c_str());
+	in.exceptions(std::ios::badbit);
+	int slot = -1;
+	while (in >> slot)
+	{
+		string restOfLine;
+		getline(in, restOfLine);
+		if (restOfLine.find(name) != std::string::npos)
+		{
+			//cout << "Found device tree overlay " << name << " loaded at slot: " << slot << endl;
+			in.close();
+			return slot;
+		}
+	}
+
+	in.close();	// Close file
+	return -1;
+}
+
+std::string PWMChannel::GetFullNameOfFileInDirectory(const std::string & dirName, const std::string & fileNameToFind)
+{
+	DIR *pDir;
+
+	dirent *pFile;
+	if ((pDir = opendir(dirName.c_str())) == NULL)
+	{
+		std::cout << "Directory name: " << dirName << " doesnt exist!" << std::endl;
+		throw std::bad_exception();
+	}
+	while ((pFile = readdir(pDir)) != NULL)
+	{
+		std::string currentFileName = (pFile->d_name);
+		if (currentFileName.find(fileNameToFind) != std::string::npos)
+		{
+			return currentFileName;
+		}
+	}
+	return std::string("");
+}
+
 PWMChannel::PWMChannel(int header, int pin) {	// Identifies the correct file path to communicate with PWM via sysfs
 	char buf[MAX_BUF] = { 0 };
+	// Load PWM device tree overlays
+	loadDeviceTree(header, pin);
+
+	// Get sysfs locations to control PWM channel
 	std::string base = "/sys/devices/";
 	std::string temp = GetFullNameOfFileInDirectory(base, "ocp.");
 	snprintf(buf, sizeof(buf), "pwm_test_P%d_%d.", header, pin);
@@ -151,27 +272,6 @@ int PWMChannel::disable() {
 	return 0;
 }
 
-std::string PWMChannel::GetFullNameOfFileInDirectory(const std::string & dirName, const std::string & fileNameToFind)
-{
-	DIR *pDir;
-
-	dirent *pFile;
-	if ((pDir = opendir(dirName.c_str())) == NULL)
-	{
-		std::cout << "Directory name: " << dirName << " doesnt exist!" << std::endl;
-		throw std::bad_exception();
-	}
-	while ((pFile = readdir(pDir)) != NULL)
-	{
-		std::string currentFileName = (pFile->d_name);
-		if (currentFileName.find(fileNameToFind) != std::string::npos)
-		{
-			return currentFileName;
-		}
-	}
-	return std::string("");
-}
-
 PWMChannel::~PWMChannel() {
 	// TODO Auto-generated destructor stub
 }
@@ -277,6 +377,7 @@ int aircraftControls::setPWMPolarity(PWMChannel channel, int polarity) {
 }
 */
 int aircraftControls::init() {
+	cout << "\nInitializing PWM channels..." << endl;
 	throttleChannel = PWMChannel(THROTTLE_HEADER, THROTTLE_PIN);
 	elevatorChannel = PWMChannel(ELEVATOR_HEADER, ELEVATOR_PIN);
 	aileronChannel = PWMChannel(AILERON_HEADER, AILERON_PIN);
@@ -314,6 +415,8 @@ int aircraftControls::init() {
 	rudderChannel.setPolarity(1);
 	rudderChannel.enable();	// Enable PWM output
 
+	cout << "...Done" << endl;
+
 	return 0;
 }
 
@@ -342,7 +445,7 @@ int aircraftControls::setFlapMode(FLAP_MIX_MODE mix) {
 int aircraftControls::setThrottle(int percent) {
 	percent = (percent + 100) / 2;
 	percent += throttleTrim;
-	throttleChannel.setDuty((float)throttleChannel.getPeriod() * (float)percent / 100);
+	throttleChannel.setDuty((throttleChannel.getPeriod() * percent) / 100);
 	return 0;
 }
 
@@ -357,7 +460,7 @@ int aircraftControls::setRoll(int percent) {
 int aircraftControls::setYaw(int percent) {
 	percent = (percent + 100) / 2;
 	percent += yawTrim;
-	rudderChannel.setDuty((float)rudderChannel.getPeriod() * (float)percent / 100);
+	rudderChannel.setDuty((rudderChannel.getPeriod() * percent) / 100);
 	return 0;
 }
 

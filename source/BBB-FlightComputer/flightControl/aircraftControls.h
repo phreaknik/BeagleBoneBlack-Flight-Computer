@@ -1,5 +1,5 @@
 /*
- * controlSurfaces.h
+ * aircraftControls.h
  *
  *  Created on: Jul 21, 2014
  *      Author: phreaknux
@@ -68,6 +68,8 @@ private:
 	unsigned long duty;
 	unsigned long polarity;
 
+	int loadDeviceTree(int header, int pin);
+	int getCapeManagerSlot(int header, int pin, char* name);
 	std::string GetFullNameOfFileInDirectory(const std::string & dirName, const std::string & fileNameToFind);
 
 public:
@@ -91,7 +93,7 @@ public:
 };
 
 class aircraftControls {
-private:
+public:	// MAKE THIS PRIVATE ********************************************************************
 	int throttle;	// In + percentage
 	int pitch;	// In +/- percentage
 	int roll;	// In +/- percentage
@@ -110,13 +112,6 @@ private:
 	PWMChannel rightAileronChannel;
 	PWMChannel rudderChannel;
 
-	/*
-	int setPWMDuty(PWMChannel channel, unsigned long duty);
-	int setPWMPeriod(PWMChannel channel, unsigned long period);
-	int startPWM(PWMChannel channel);
-	int stopPWM(PWMChannel channel);
-	int setPWMPolarity(PWMChannel channel, int polarity);
-	*/
 public:
 	aircraftControls(FLAP_MIX_MODE mix);
 	int init();
