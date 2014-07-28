@@ -1,4 +1,4 @@
-BeagleBoneBlack_Flight_Computer
+BeagleBoneBlack Flight Computer
 ===============================
 
 A flight computer for small aircraft based on the BeagleBone Black. This project aims to do take inputs from IMU and other sensors and to stabilize and guide the flight of remote control aircraft. This is meant to be a platform for people to launch their own airborn tests. With the BeagleBoneBlack, a full 1GHz Debian Linux operating system is available, giving users a very capable airborn developement and test platform for their projects.
