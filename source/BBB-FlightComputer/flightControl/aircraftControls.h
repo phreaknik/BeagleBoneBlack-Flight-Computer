@@ -28,10 +28,10 @@
 #include <math.h>
 
 // Define what pins (and headers: P9 or P8) each servo is connected to
-#define THROTTLE_HEADER		9
-#define THROTTLE_PIN		21
-#define ELEVATOR_HEADER		9
-#define ELEVATOR_PIN		21
+#define THROTTLE_HEADER		8
+#define THROTTLE_PIN		13
+#define ELEVATOR_HEADER		8
+#define ELEVATOR_PIN		19
 #define AILERON_HEADER		9
 #define AILERON_PIN			21
 #define LEFT_ELEVON_HEADER	9

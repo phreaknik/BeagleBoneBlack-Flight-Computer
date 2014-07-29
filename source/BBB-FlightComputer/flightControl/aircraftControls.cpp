@@ -365,12 +365,12 @@ int aircraftControls::setThrottle(int percent) {
 }
 
 int aircraftControls::setPitch(int percent) {
-	ERRORHERE;
+	//ERRORHERE;
 	return 0;
 }
 
 int aircraftControls::setRoll(int percent) {
-	ERRORHERE;
+	//ERRORHERE;
 	return 0;
 }
 
