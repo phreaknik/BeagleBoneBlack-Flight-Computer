@@ -28,18 +28,18 @@
 #include <math.h>
 
 // Define what pins (and headers: P9 or P8) each servo is connected to
-#define THROTTLE_HEADER		8
-#define THROTTLE_PIN		13
-#define ELEVATOR_HEADER		8
-#define ELEVATOR_PIN		19
+#define THROTTLE_HEADER		9
+#define THROTTLE_PIN		14
+#define ELEVATOR_HEADER		9
+#define ELEVATOR_PIN		16
 #define AILERON_HEADER		9
 #define AILERON_PIN			21
 #define LEFT_ELEVON_HEADER	9
-#define LEFT_ELEVON_PIN		21
+#define LEFT_ELEVON_PIN		22
 #define RIGHT_ELEVON_HEADER	9
-#define RIGHT_ELEVON_PIN	21
+#define RIGHT_ELEVON_PIN	28
 #define RUDDER_HEADER		9
-#define RUDDER_PIN			21
+#define RUDDER_PIN			42
 
 #define FILE_PATH_LENGTH	128
 
@@ -55,9 +55,14 @@ enum FLAP_MIX_MODE {
 	FLAP_MIX_ELEVON		= 1
 };
 
+int loadDeviceTree(int header, int pin);
+int getCapeManagerSlot(char* name);
+std::string GetFullNameOfFileInDirectory(const std::string & dirName, const std::string & fileNameToFind);
+
 class PWMChannel {
 private:
 	// File paths for PWM control
+	std::string channelName;
 	char basePath[FILE_PATH_LENGTH];
 	char periodPath[FILE_PATH_LENGTH];
 	char dutyPath[FILE_PATH_LENGTH];
@@ -68,13 +73,14 @@ private:
 	unsigned long duty;
 	unsigned long polarity;
 
-	int loadDeviceTree(int header, int pin);
-	int getCapeManagerSlot(int header, int pin, char* name);
-	std::string GetFullNameOfFileInDirectory(const std::string & dirName, const std::string & fileNameToFind);
+	friend int loadDeviceTree(int header, int pin);
+	friend int getCapeManagerSlot(char* name);
+	friend std::string GetFullNameOfFileInDirectory(const std::string & dirName, const std::string & fileNameToFind);
 
 public:
-	PWMChannel(int header, int pin);
+	PWMChannel(int header, int pin, std::string chName);
 	PWMChannel();
+	int init();
 	char* getPeriodPath() { return periodPath; }
 	char* getDutyPath() { return dutyPath; }
 	char* getPolarityPath() { return polarityPath; }
@@ -83,7 +89,7 @@ public:
 	unsigned long getPeriod() { return period; }
 	int setPeriod(unsigned long p);
 	unsigned long getDuty() { return duty; }
-	int setDuty(unsigned long d);
+	int setDuty(unsigned long dut);
 	unsigned long getPolarity() { return polarity; }
 	int setPolarity(unsigned long p);
 	int enable();
@@ -112,9 +118,14 @@ public:	// MAKE THIS PRIVATE ***************************************************
 	PWMChannel rightElevonChannel;
 	PWMChannel rudderChannel;
 
+	friend int getCapeManagerSlot(char* name);
+	friend std::string GetFullNameOfFileInDirectory(const std::string & dirName, const std::string & fileNameToFind);
+
 public:
 	aircraftControls(FLAP_MIX_MODE mix);
 	int init();
+	int PWMInit();
+	//int shutdown();	A bug in capemgr is causing the capemgr to crash when unloading PWM overlays
 	int reset();
 
 	int setFlapMode(FLAP_MIX_MODE mix);
