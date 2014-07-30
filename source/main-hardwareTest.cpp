@@ -18,8 +18,6 @@ using namespace std;
 
 unsigned long delta_t = 0;
 
-unsigned long micros();
-
 int main(int argc, char* argv[]) {
 	LMS303 lms303(1, 0x1d);
 	LPS331Altimeter lps331(1, 0x5d);

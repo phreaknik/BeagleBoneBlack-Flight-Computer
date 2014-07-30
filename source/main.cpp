@@ -53,21 +53,59 @@ int main(int argc, char* argv[]) {
 	aircraftControls aircraft(FLAP_MIX_ELEVON);
 	aircraft.init();
 
+	std::string input;
+	cout << "\n Running...\n" << endl;
+	cout << " Enter 'q' to quit: ";
 	while(1) {
 		aircraft.setThrottle(-100);
-		usleep(2000000);
+
+		// Delay while reading input
+		for (int i = 0; i < 1000000000; i++) {
+			cin >> input;
+			if (input == "q") {
+				return 0;
+			}
+		}
 
 		aircraft.setThrottle(-50);
-		usleep(2000000);
+
+		// Delay while reading input
+		for (int i = 0; i < 1000000000; i++) {
+			cin >> input;
+			if (input == "q") {
+				return 0;
+			}
+		}
 
 		aircraft.setThrottle(0);
-		usleep(2000000);
+
+		// Delay while reading input
+		for (int i = 0; i < 1000000000; i++) {
+			cin >> input;
+			if (input == "q") {
+				return 0;
+			}
+		}
 
 		aircraft.setThrottle(50);
-		usleep(2000000);
+
+		// Delay while reading input
+		for (int i = 0; i < 1000000000; i++) {
+			cin >> input;
+			if (input == "q") {
+				return 0;
+			}
+		}
 
 		aircraft.setThrottle(100);
-		usleep(2000000);
+
+		// Delay while reading input
+		for (int i = 0; i < 1000000000; i++) {
+			cin >> input;
+			if (input == "q") {
+				return 0;
+			}
+		}
 	}
 
 	/*
