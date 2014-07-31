@@ -43,76 +43,72 @@ int main(int argc, char* argv[]) {
 		cout<< "euler: " << euler.x() << " " << euler.y() << " " << euler.z() << "\n";
 	}
 	*/
-
+	/*
 	// Sensors
 	LMS303 lms303(1, 0x1d);
 	LPS331Altimeter lps331(1, 0x5d);
 	L3GD20Gyro l3gd20(1, 0x6b);
 
 	// Aircraft
-	aircraftControls aircraft(FLAP_MIX_ELEVON);
+	aircraftControls aircraft(FLAP_MIX_ACRO);
 	aircraft.init();
 
 	std::string input;
 	cout << "\n Running...\n" << endl;
-	cout << " Enter 'q' to quit: ";
 	while(1) {
-		aircraft.setThrottle(-100);
+		aircraft.setPitch(-100);
+		aircraft.setRoll(-100);
+		usleep(500000);
 
-		// Delay while reading input
-		for (int i = 0; i < 1000000000; i++) {
-			cin >> input;
-			if (input == "q") {
-				return 0;
-			}
-		}
+		aircraft.setPitch(-100);
+		aircraft.setRoll(0);
+		usleep(500000);
 
-		aircraft.setThrottle(-50);
+		aircraft.setPitch(-100);
+		aircraft.setRoll(100);
+		usleep(500000);
 
-		// Delay while reading input
-		for (int i = 0; i < 1000000000; i++) {
-			cin >> input;
-			if (input == "q") {
-				return 0;
-			}
-		}
+		aircraft.setPitch(0);
+		aircraft.setRoll(-100);
+		usleep(500000);
 
-		aircraft.setThrottle(0);
+		aircraft.setPitch(0);
+		aircraft.setRoll(0);
+		usleep(500000);
 
-		// Delay while reading input
-		for (int i = 0; i < 1000000000; i++) {
-			cin >> input;
-			if (input == "q") {
-				return 0;
-			}
-		}
+		aircraft.setPitch(0);
+		aircraft.setRoll(100);
+		usleep(500000);
 
-		aircraft.setThrottle(50);
+		aircraft.setPitch(100);
+		aircraft.setRoll(-100);
+		usleep(500000);
 
-		// Delay while reading input
-		for (int i = 0; i < 1000000000; i++) {
-			cin >> input;
-			if (input == "q") {
-				return 0;
-			}
-		}
+		aircraft.setPitch(100);
+		aircraft.setRoll(0);
+		usleep(500000);
 
-		aircraft.setThrottle(100);
+		aircraft.setPitch(100);
+		aircraft.setRoll(100);
+		usleep(500000);
 
-		// Delay while reading input
-		for (int i = 0; i < 1000000000; i++) {
-			cin >> input;
-			if (input == "q") {
-				return 0;
-			}
-		}
-	}
+	}*/
 
-	/*
+	LMS303 lms303(1, 0x1d);
+	LPS331Altimeter alt(1, 0x5d);
+	L3GD20Gyro gyro(1, 0x6b);
+
+	// Aircraft
+	aircraftControls aircraft(FLAP_MIX_ELEVON);
+	aircraft.init();
+
+	float pitchReading = 0;
+	float rollReading = 0;
+
 	while(1) {
 		lms303.readFullSensorState();
-		lps331.readFullSensorState();
-		l3gd20.readFullSensorState();
+		gyro.readFullSensorState();
+		alt.readFullSensorState();
 
 		cout << "##################################\n";
 
@@ -125,22 +121,28 @@ int main(int argc, char* argv[]) {
 		cout << "Accel Z:\t" << lms303.getAccelZ() << " g" << endl << endl;
 
 
-		cout << "Pitch:\t" << lms303.getPitch() << "\u00b0" << endl;
-		cout << "Roll:\t" << lms303.getRoll() << "\u00b0" << endl << endl;
+		pitchReading = lms303.getPitch();
+		rollReading = lms303.getRoll();
+		cout << "Pitch:\t" << pitchReading << "\u00b0" << endl;
+		cout << "Roll:\t" << rollReading << "\u00b0" << endl << endl;
 
+		aircraft.setPitch(-1*pitchReading*100/90);
+		aircraft.setRoll(-1*rollReading*100/90);
+		cout << aircraft.getPitch() << endl;
+		cout << aircraft.getRoll() << endl;
 
 		cout << "Core temperature:\t" << lms303.getTemperature() << "\u00b0C" << endl << endl;
 
-		cout << "Pressure:\t" << lps331.getPressure() << " mBar" << endl;
-		cout << "Altitude:\t" << lps331.getAltitude() << " m" << endl << endl;
+		cout << "Pressure:\t" << alt.getPressure() << " mBar" << endl;
+		cout << "Altitude:\t" << alt.getAltitude() << " m" << endl << endl;
 
-		cout << "Roll X:\t" << l3gd20.getGyroX() << " \u00b0/s" << endl;
-		cout << "Roll Y:\t" << l3gd20.getGyroY() << " \u00b0/s" << endl;
-		cout << "Roll Z:\t" << l3gd20.getGyroZ() << " \u00b0/s" << endl;
+		cout << "Roll X:\t" << gyro.getGyroX() << " \u00b0/s" << endl;
+		cout << "Roll Y:\t" << gyro.getGyroY() << " \u00b0/s" << endl;
+		cout << "Roll Z:\t" << gyro.getGyroZ() << " \u00b0/s" << endl;
 
-		usleep(500000);
+		//usleep(10000);
 
 	} // \Hardware test
-	*/
+
 	return 0;
 }

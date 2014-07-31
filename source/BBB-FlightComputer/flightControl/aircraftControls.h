@@ -31,15 +31,15 @@
 #define THROTTLE_HEADER		9
 #define THROTTLE_PIN		14
 #define ELEVATOR_HEADER		9
-#define ELEVATOR_PIN		16
+#define ELEVATOR_PIN		22
 #define AILERON_HEADER		9
-#define AILERON_PIN			21
+#define AILERON_PIN			42
 #define LEFT_ELEVON_HEADER	9
 #define LEFT_ELEVON_PIN		22
 #define RIGHT_ELEVON_HEADER	9
-#define RIGHT_ELEVON_PIN	28
+#define RIGHT_ELEVON_PIN	42
 #define RUDDER_HEADER		9
-#define RUDDER_PIN			42
+#define RUDDER_PIN			42	// Give this channel its own pwm pin
 
 #define FILE_PATH_LENGTH	128
 
@@ -72,6 +72,8 @@ private:
 	unsigned long period;
 	unsigned long duty;
 	unsigned long polarity;
+	unsigned long servoMax;
+	unsigned long servoMin;
 
 	friend int loadDeviceTree(int header, int pin);
 	friend int getCapeManagerSlot(char* name);
@@ -92,6 +94,8 @@ public:
 	int setDuty(unsigned long dut);
 	unsigned long getPolarity() { return polarity; }
 	int setPolarity(unsigned long p);
+	unsigned long getServoMax() { return servoMax; }
+	unsigned long getServoMin() { return servoMin; }
 	int enable();
 	int disable();
 
@@ -99,7 +103,7 @@ public:
 };
 
 class aircraftControls {
-public:	// MAKE THIS PRIVATE ********************************************************************
+public:	// MAKE THIS PRIVATE************************************************************************************
 	int throttle;	// In + percentage
 	int pitch;	// In +/- percentage
 	int roll;	// In +/- percentage

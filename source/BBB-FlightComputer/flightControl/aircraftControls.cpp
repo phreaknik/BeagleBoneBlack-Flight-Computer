@@ -10,6 +10,8 @@
 
 #define MAX_BUF	64
 #define FLAP_DEFLECTION_ANGLE	15	// Max throw of flaps in degrees
+#define SERVO_MAX_DUTY	2000000
+#define SERVO_MIN_DUTY	1000000
 
 using namespace std;
 
@@ -137,6 +139,8 @@ PWMChannel::PWMChannel(int header, int pin, std::string chName) {	// Identifies 
 	memcpy(runPath, temp1.c_str(), temp1.size());
 	//cout << "runPath: " << runPath << endl;
 
+	servoMax = SERVO_MAX_DUTY;
+	servoMin = SERVO_MIN_DUTY;
 	channelName = chName;
 	period = 0;
 	duty = 0;
@@ -151,6 +155,8 @@ PWMChannel::PWMChannel(int header, int pin, std::string chName) {	// Identifies 
 
 PWMChannel::PWMChannel() {	// Identifies the correct file path to communicate with PWM via sysfs
 	memset(basePath, 0, sizeof(basePath));	// clear path array
+	servoMax = SERVO_MAX_DUTY;
+	servoMin = SERVO_MIN_DUTY;
 	period = 0;
 	duty = 0;
 	polarity = 0;
@@ -350,7 +356,7 @@ int aircraftControls::PWMInit() {
 		cout << "Device tree overlay am33xx_pwm already loaded." << endl;
 	}
 
-	usleep(500000);
+	usleep(1000000);
 	return 0;
 }
 
@@ -417,26 +423,128 @@ int aircraftControls::setFlapMode(FLAP_MIX_MODE mix) {
 }
 
 int aircraftControls::setThrottle(int percent) {
+	throttle = percent;
+	unsigned long maxDuty = throttleChannel.getServoMax();
+	unsigned long minDuty = throttleChannel.getServoMin();
 	percent = (percent + 100) / 2;
 	percent += throttleTrim;
-	throttleChannel.setDuty((throttleChannel.getPeriod() * percent) / 100);
+
+	unsigned long dutyLevel = ((maxDuty - minDuty) * percent ) / 100;
+	dutyLevel += minDuty;
+	if(dutyLevel > maxDuty) dutyLevel = maxDuty;
+	if(dutyLevel < minDuty) dutyLevel = minDuty;
+
+	throttleChannel.setDuty(dutyLevel);
 	return 0;
 }
 
 int aircraftControls::setPitch(int percent) {
-	//ERRORHERE;
+	pitch = percent;
+	percent = (percent + 100) / 2;
+	percent += pitchTrim;
+
+	unsigned long maxDuty = rightElevonChannel.getServoMax();
+	unsigned long minDuty = rightElevonChannel.getServoMin();
+
+	switch(mixMode) {
+	case FLAP_MIX_ACRO: {
+		unsigned long dutyLevel = ((maxDuty - minDuty) * percent ) / 100;
+		dutyLevel += minDuty;
+		if(dutyLevel > maxDuty) dutyLevel = maxDuty;
+		if(dutyLevel < minDuty) dutyLevel = minDuty;
+
+		elevatorChannel.setDuty(dutyLevel);
+		break;
+	}
+	case FLAP_MIX_ELEVON: {
+		int tempPercent = ((pitch + pitchTrim) / 2) + ((roll + rollTrim) / 2);
+		tempPercent = ( tempPercent + 100 ) / 2;
+		unsigned long dutyLevel = ((maxDuty - minDuty) * tempPercent ) / 100;
+		dutyLevel += minDuty;
+		if(dutyLevel > maxDuty) dutyLevel = maxDuty;
+		if(dutyLevel < minDuty) dutyLevel = minDuty;
+
+		leftElevonChannel.setDuty(dutyLevel);
+
+		tempPercent = ((pitch + pitchTrim) / 2) - ((roll + rollTrim) / 2);
+		tempPercent = ( tempPercent + 100 ) / 2;
+		dutyLevel = ((maxDuty - minDuty) * tempPercent ) / 100;
+		dutyLevel += minDuty;
+		if(dutyLevel > maxDuty) dutyLevel = maxDuty;
+		if(dutyLevel < minDuty) dutyLevel = minDuty;
+
+		rightElevonChannel.setDuty(dutyLevel);
+		break;
+	}
+	}
+
 	return 0;
 }
 
 int aircraftControls::setRoll(int percent) {
-	//ERRORHERE;
+	roll = percent;
+	percent = (percent + 100) / 2;
+	percent += rollTrim;
+
+	unsigned long maxDuty = rightElevonChannel.getServoMax();
+	unsigned long minDuty = rightElevonChannel.getServoMin();
+
+	switch(mixMode) {
+	case FLAP_MIX_ACRO: {
+		unsigned long dutyLevel = ((maxDuty - minDuty) * percent ) / 100;
+		dutyLevel += minDuty;
+		if(dutyLevel > maxDuty) dutyLevel = maxDuty;
+		if(dutyLevel < minDuty) dutyLevel = minDuty;
+
+		aileronChannel.setDuty(dutyLevel);
+		break;
+	}
+	case FLAP_MIX_ELEVON: {
+		int tempPercent = ((pitch + pitchTrim) / 2) + ((roll + rollTrim) / 2);
+		tempPercent = ( tempPercent + 100 ) / 2;
+		cout << "tempPercent: " << tempPercent << endl;
+
+		unsigned long dutyLevel = ((maxDuty - minDuty) * tempPercent ) / 100;
+		dutyLevel += minDuty;
+		cout << "dutyLevel: " << dutyLevel << endl;
+		if(dutyLevel > maxDuty) dutyLevel = maxDuty;
+		if(dutyLevel < minDuty) dutyLevel = minDuty;
+
+
+		leftElevonChannel.setDuty(dutyLevel);
+
+		tempPercent = ((pitch + pitchTrim) / 2) - ((roll + rollTrim) / 2);
+		tempPercent = ( tempPercent + 100 ) / 2;
+		cout << "tempPercent: " << tempPercent << endl;
+
+		dutyLevel = ((maxDuty - minDuty) * tempPercent ) / 100;
+		dutyLevel += minDuty;
+		cout << "dutyLevel: " << dutyLevel << endl;
+		if(dutyLevel > maxDuty) dutyLevel = maxDuty;
+		if(dutyLevel < minDuty) dutyLevel = minDuty;
+
+
+		rightElevonChannel.setDuty(dutyLevel);
+		break;
+	}
+	}
+
 	return 0;
 }
 
 int aircraftControls::setYaw(int percent) {
+	yaw = percent;
+	unsigned long maxDuty = rudderChannel.getServoMax();
+	unsigned long minDuty = rudderChannel.getServoMin();
 	percent = (percent + 100) / 2;
 	percent += yawTrim;
-	rudderChannel.setDuty((rudderChannel.getPeriod() * percent) / 100);
+
+	unsigned long dutyLevel = ((maxDuty - minDuty) * percent ) / 100;
+	dutyLevel += minDuty;
+	if(dutyLevel > maxDuty) dutyLevel = maxDuty;
+	if(dutyLevel < minDuty) dutyLevel = minDuty;
+
+	rudderChannel.setDuty(dutyLevel);
 	return 0;
 }
 
