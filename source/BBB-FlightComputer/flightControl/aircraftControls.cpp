@@ -502,11 +502,9 @@ int aircraftControls::setRoll(int percent) {
 	case FLAP_MIX_ELEVON: {
 		int tempPercent = ((pitch + pitchTrim) / 2) + ((roll + rollTrim) / 2);
 		tempPercent = ( tempPercent + 100 ) / 2;
-		cout << "tempPercent: " << tempPercent << endl;
 
 		unsigned long dutyLevel = ((maxDuty - minDuty) * tempPercent ) / 100;
 		dutyLevel += minDuty;
-		cout << "dutyLevel: " << dutyLevel << endl;
 		if(dutyLevel > maxDuty) dutyLevel = maxDuty;
 		if(dutyLevel < minDuty) dutyLevel = minDuty;
 
@@ -515,11 +513,9 @@ int aircraftControls::setRoll(int percent) {
 
 		tempPercent = ((pitch + pitchTrim) / 2) - ((roll + rollTrim) / 2);
 		tempPercent = ( tempPercent + 100 ) / 2;
-		cout << "tempPercent: " << tempPercent << endl;
 
 		dutyLevel = ((maxDuty - minDuty) * tempPercent ) / 100;
 		dutyLevel += minDuty;
-		cout << "dutyLevel: " << dutyLevel << endl;
 		if(dutyLevel > maxDuty) dutyLevel = maxDuty;
 		if(dutyLevel < minDuty) dutyLevel = minDuty;
 
